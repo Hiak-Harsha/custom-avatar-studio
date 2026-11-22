@@ -37,7 +37,8 @@ def apply_active_style(pm: ProfileManager, silent: bool = False, terminal_only: 
             opacity = profile.get("terminal", {}).get("opacity", 0.35)
             alignment = profile.get("terminal", {}).get("alignment", "bottomRight")
             stretch = profile.get("terminal", {}).get("stretch", "uniformToFill")
-            apply_terminal_background(str(wall_path), opacity=opacity, alignment=alignment, stretch=stretch)
+            term_bg = STUDIO_ROOT / style.get("gif", style["wallpaper"])
+            apply_terminal_background(str(term_bg), opacity=opacity, alignment=alignment, stretch=stretch)
             if not silent:
                 print(f"  ✅ Windows Terminal background updated! ({style_name})")
         except Exception as e:

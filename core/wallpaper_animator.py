@@ -32,6 +32,21 @@ POSE_FILES = [
 ]
 
 
+def get_poses_dir() -> Path:
+    from core.profile import ProfileManager
+    try:
+        pm = ProfileManager(str(STUDIO_ROOT))
+        active = pm.get_active_style()
+        poses_rel = active.get("poses_dir")
+        if poses_rel:
+            p = STUDIO_ROOT / poses_rel
+            if p.exists():
+                return p
+    except Exception:
+        pass
+    return POSES_DIR
+
+
 def get_current_pose_index() -> int:
     if not STATE_FILE.exists():
         return 0
@@ -51,11 +66,12 @@ def save_current_pose_index(idx: int):
 
 def advance_wallpaper_pose() -> str:
     """Advances the desktop wallpaper to the next frame/pose in sequence."""
+    poses_dir = get_poses_dir()
     idx = get_current_pose_index()
     next_idx = (idx + 1) % len(POSE_FILES)
     save_current_pose_index(next_idx)
 
-    target_file = POSES_DIR / POSE_FILES[next_idx]
+    target_file = poses_dir / POSE_FILES[next_idx]
     if target_file.exists():
         apply_desktop_wallpaper(str(target_file))
 
