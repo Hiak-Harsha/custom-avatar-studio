@@ -9,8 +9,23 @@ if "%1"=="copy" goto do_copy
 if "%1"=="status" goto do_status
 if "%1"=="create" goto do_create
 if "%1"=="screensaver" goto do_screensaver
+if "%1"=="icons" goto do_icons
 
 python "%STUDIO_DIR%\cli.py" %*
+goto end
+
+:do_icons
+if "%2"=="show" (
+    powershell -NoProfile -Command "Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideIcons' -Value 0; Stop-Process -Name explorer -Force"
+    echo Desktop icons are now visible.
+    goto end
+)
+if "%2"=="hide" (
+    powershell -NoProfile -Command "Set-ItemProperty -Path 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced' -Name 'HideIcons' -Value 1; Stop-Process -Name explorer -Force"
+    echo Desktop icons are now hidden for unobstructed wallpaper view.
+    goto end
+)
+echo Usage: hiak icons [show^|hide]
 goto end
 
 :do_screensaver

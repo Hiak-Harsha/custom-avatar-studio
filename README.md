@@ -70,6 +70,13 @@ hiak switch lofi_ghibli
 hiak switch pixar_3d
 hiak switch comic_popart
 
+# Launch the animated fullscreen screensaver
+hiak screensaver
+
+# Hide or show desktop icons for unobstructed wallpaper view
+hiak icons hide
+hiak icons show
+
 # Launch the dark-mode GUI control panel
 hiak gui
 ```
