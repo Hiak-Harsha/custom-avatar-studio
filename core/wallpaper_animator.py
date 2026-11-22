@@ -173,9 +173,9 @@ def is_desktop_surface(pt_x, pt_y) -> bool:
 
 def listen_for_desktop_clicks():
     """
-    Polls cursor position and clicks on the desktop surface:
-    1. Deliberate hover over 'hiak' -> morphs into 'harsha' for 3 seconds and reverts.
-    2. Clicks on the desktop surface -> advances the cartoon character emotions.
+    High-frequency non-blocking state machine for desktop wallpaper interactions:
+    1. INSTANT HOVER: The moment cursor touches 'hiak', pixel morph to 'harsha' begins with zero delay.
+    2. ALWAYS-ON CLICKS: Clicks on desktop wallpaper are NEVER blocked and advance mascot emotions instantly.
     """
     user32 = ctypes.windll.user32
     try:
@@ -187,52 +187,120 @@ def listen_for_desktop_clicks():
     screen_h = user32.GetSystemMetrics(1)
     pt = wintypes.POINT()
 
+    STATE_IDLE = "IDLE"
+    STATE_MORPH_IN_1 = "MORPH_IN_1"
+    STATE_MORPH_IN_2 = "MORPH_IN_2"
+    STATE_HOLD_HARSHA = "HOLD_HARSHA"
+    STATE_MORPH_OUT = "MORPH_OUT"
+
+    current_state = STATE_IDLE
+    state_start_time = 0.0
+    last_hover_exit_time = 0.0
+    was_hovering = False
     was_down = False
     last_click_time = 0.0
-    last_morph_time = 0.0
-    hover_start_time = 0.0
-    is_hovering_text = False
 
-    print(f"Desktop listener active! Screen: {screen_w}x{screen_h}")
-    print("  • Hover over 'hiak' on desktop to morph into 'harsha' (3s auto-revert)")
-    print("  • Click on desktop wallpaper to advance cartoon character emotions")
+    print(f"🚀 Ultra-Fast Desktop listener active! Screen: {screen_w}x{screen_h}")
+    print("  • Instant hover on 'hiak' -> starts pixel dissolve to 'harsha'")
+    print("  • Clicks are ALWAYS ON -> instantly advances cartoon mascot emotions")
 
     while True:
+        now = time.time()
         user32.GetCursorPos(ctypes.byref(pt))
         on_desktop = is_desktop_surface(pt.x, pt.y)
 
-        # 1. HOVER DETECTION OVER HIAK TEXT ON DESKTOP
-        if on_desktop and is_over_text(pt.x, pt.y, screen_w, screen_h):
-            now = time.time()
-            if not is_hovering_text:
-                is_hovering_text = True
-                hover_start_time = now
-            elif (now - hover_start_time > 0.25) and (now - last_morph_time > 4.5):
-                # Deliberate hover > 250ms, cooldown expired
-                last_morph_time = now
-                print("✨ Deliberate hover over 'hiak' on desktop! Playing morph to 'harsha'...")
-                try:
-                    play_desktop_pixel_morph(duration=3.0)
-                    last_morph_time = time.time()
-                except Exception as e:
-                    print(f"Morph error: {e}")
-        else:
-            is_hovering_text = False
-
-        # 2. CLICK DETECTION (ADVANCE CARTOON MASCOT POSE)
+        # ========================================================
+        # 1. ALWAYS-ON CLICK DETECTION (NEVER BLOCKED)
+        # ========================================================
         is_down = bool(user32.GetAsyncKeyState(0x01) & 0x8000)
         if is_down and not was_down:
-            now = time.time()
-            if now - last_click_time > 0.35:
-                if on_desktop:
-                    last_click_time = now
-                    try:
-                        pose = advance_wallpaper_pose()
-                        print(f"Desktop clicked! Moved mascot to: {pose}")
-                    except Exception as e:
-                        pass
+            if on_desktop and (now - last_click_time > 0.22):
+                last_click_time = now
+                try:
+                    pose = advance_wallpaper_pose()
+                    print(f"⚡ Desktop clicked! Advanced mascot to: {pose}")
+                    # If in morph state, reset to idle with the newly clicked pose
+                    if current_state != STATE_IDLE:
+                        current_state = STATE_IDLE
+                        last_hover_exit_time = now
+                except Exception as e:
+                    print(f"Click advance error: {e}")
         was_down = is_down
-        time.sleep(0.03)
+
+        # ========================================================
+        # 2. INSTANT HOVER DETECTION (ZERO DELAY)
+        # ========================================================
+        hovering = on_desktop and is_over_text(pt.x, pt.y, screen_w, screen_h)
+
+        if hovering:
+            # Trigger immediately on first touch (if idle and cooldown expired)
+            if current_state == STATE_IDLE and (now - last_hover_exit_time > 0.6):
+                current_state = STATE_MORPH_IN_1
+                state_start_time = now
+                print("✨ Instant hover over 'hiak'! Dissolving into 'harsha'...")
+                try:
+                    f1 = MORPH_DIR / "3_3_dissolve_start.png"
+                    if f1.exists():
+                        apply_desktop_wallpaper(str(f1))
+                except Exception as e:
+                    print(f"Frame 1 error: {e}")
+        else:
+            if was_hovering and current_state == STATE_IDLE:
+                last_hover_exit_time = now
+        was_hovering = hovering
+
+        # ========================================================
+        # 3. NON-BLOCKING MORPH FRAME SEQUENCING
+        # ========================================================
+        if current_state == STATE_MORPH_IN_1:
+            if now - state_start_time >= 0.04:
+                current_state = STATE_MORPH_IN_2
+                state_start_time = now
+                try:
+                    f2 = MORPH_DIR / "4_4_glitch_midway.png"
+                    if f2.exists():
+                        apply_desktop_wallpaper(str(f2))
+                except Exception:
+                    pass
+
+        elif current_state == STATE_MORPH_IN_2:
+            if now - state_start_time >= 0.04:
+                current_state = STATE_HOLD_HARSHA
+                state_start_time = now
+                try:
+                    f3 = MORPH_DIR / "6_6_harsha_coding.png"
+                    if f3.exists():
+                        apply_desktop_wallpaper(str(f3))
+                except Exception:
+                    pass
+
+        elif current_state == STATE_HOLD_HARSHA:
+            # Hold on HARSHA for 2.6 seconds, then start return morph
+            if now - state_start_time >= 2.6:
+                current_state = STATE_MORPH_OUT
+                state_start_time = now
+                try:
+                    f4 = MORPH_DIR / "8_8_morph_return.png"
+                    if f4.exists():
+                        apply_desktop_wallpaper(str(f4))
+                except Exception:
+                    pass
+
+        elif current_state == STATE_MORPH_OUT:
+            if now - state_start_time >= 0.04:
+                current_state = STATE_IDLE
+                last_hover_exit_time = now
+                try:
+                    # Restore active HIAK mascot pose
+                    poses_dir = get_poses_dir()
+                    idx = get_current_pose_index()
+                    active_pose = poses_dir / POSE_FILES[idx]
+                    if active_pose.exists():
+                        apply_desktop_wallpaper(str(active_pose))
+                except Exception:
+                    pass
+
+        time.sleep(0.015)
 
 
 if __name__ == "__main__":
