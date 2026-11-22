@@ -111,8 +111,10 @@ def play_desktop_pixel_morph(duration: float = 3.0):
             apply_desktop_wallpaper(str(f2))
             time.sleep(0.09)
 
-        # 3. Solid HARSHA (Coding on Laptop)
-        f3 = MORPH_DIR / "6_6_harsha_coding.png"
+        # 3. Solid HARSHA with Option 4 Cyber-Bot
+        f3 = MORPH_DIR / "6_6_harsha_cyber_bot_coding.png"
+        if not f3.exists():
+            f3 = MORPH_DIR / "6_6_harsha_coding.png"
         if f3.exists():
             apply_desktop_wallpaper(str(f3))
             time.sleep(duration)
@@ -268,7 +270,9 @@ def listen_for_desktop_clicks():
                 current_state = STATE_HOLD_HARSHA
                 state_start_time = now
                 try:
-                    f3 = MORPH_DIR / "6_6_harsha_coding.png"
+                    f3 = MORPH_DIR / "6_6_harsha_cyber_bot_coding.png"
+                    if not f3.exists():
+                        f3 = MORPH_DIR / "6_6_harsha_coding.png"
                     if f3.exists():
                         apply_desktop_wallpaper(str(f3))
                 except Exception:

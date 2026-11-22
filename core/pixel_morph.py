@@ -128,32 +128,33 @@ def build_hiak_harsha_morph_pack():
     out_dir = WALLPAPERS_DIR / "poses_hiak_harsha_morph"
     out_dir.mkdir(parents=True, exist_ok=True)
     
+    bot_dir = STUDIO_ROOT / "assets" / "mascots" / "cyber_bot"
+
     # Sequence of transitions with mascot emotion pairs
-    # text1 -> text2 -> text1
+    # text1 (HIAK + Brick) -> morph glitch -> text2 (HARSHA + Option 4 Cyber-Bot) -> return
     stages = [
-        # 1. Solid HIAK (Neutral)
-        (0.0, "neutral.png", "1_hiak_solid"),
-        # 2. HIAK with sunglasses (Cool)
-        (0.0, "cool.png", "2_hiak_cool"),
-        # 3. Dissolve starts (Mascot curious/thinking)
-        (0.3, "thinking.png", "3_dissolve_start"),
-        # 4. Heavy glitch / particle morph (Mascot surprised/excited)
-        (0.65, "excited.png", "4_glitch_midway"),
-        # 5. HARSHA emerges (Idea!)
-        (0.9, "idea.png", "5_harsha_forming"),
-        # 6. Solid HARSHA (Coding on laptop!)
-        (1.0, "coding.png", "6_harsha_coding"),
-        # 7. Solid HARSHA (Happy)
-        (1.0, "happy.png", "7_harsha_happy"),
+        # 1. Solid HIAK (Neutral Orange Brick)
+        (0.0, MASCOTS_DIR / "neutral.png", "1_hiak_solid"),
+        # 2. HIAK with sunglasses (Cool Orange Brick)
+        (0.0, MASCOTS_DIR / "cool.png", "2_hiak_cool"),
+        # 3. Dissolve starts (Mascot thinking)
+        (0.3, MASCOTS_DIR / "thinking.png", "3_dissolve_start"),
+        # 4. Heavy glitch / particle morph
+        (0.65, MASCOTS_DIR / "excited.png", "4_glitch_midway"),
+        # 5. HARSHA emerges with Option 4 Cyber-Bot!
+        (0.9, bot_dir / "coding.png", "5_harsha_forming"),
+        # 6. Solid HARSHA + Cyber-Bot Data Stream!
+        (1.0, bot_dir / "coding.png", "6_harsha_cyber_bot_coding"),
+        # 7. Solid HARSHA + Cyber-Bot Happy ^_^ !
+        (1.0, bot_dir / "happy.png", "7_harsha_cyber_bot_happy"),
         # 8. Dissolve back to HIAK
-        (0.5, "starstruck.png", "8_morph_return"),
+        (0.5, MASCOTS_DIR / "starstruck.png", "8_morph_return"),
     ]
     
     frames_1080p = []
     frames_wa = []
     
-    for idx, (prog, mascot_file, name) in enumerate(stages):
-        m_path = MASCOTS_DIR / mascot_file
+    for idx, (prog, m_path, name) in enumerate(stages):
         m_img = Image.open(str(m_path)).convert("RGBA")
         
         # Render morphed text
