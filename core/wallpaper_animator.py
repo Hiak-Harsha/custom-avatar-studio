@@ -87,6 +87,67 @@ def auto_animate_loop(interval: float = 1.2):
         time.sleep(interval)
 
 
+MORPH_DIR = STUDIO_ROOT / "assets" / "wallpapers" / "poses_hiak_harsha_morph"
+
+
+def play_desktop_pixel_morph(duration: float = 3.0):
+    """
+    Plays the pixelating morph transition on the Windows Desktop Wallpaper:
+    hiak -> pixel dissolve glitch -> harsha (holds for 3s) -> morph return -> hiak!
+    """
+    if not MORPH_DIR.exists():
+        return
+
+    try:
+        # 1. Dissolve Start
+        f1 = MORPH_DIR / "3_3_dissolve_start.png"
+        if f1.exists():
+            apply_desktop_wallpaper(str(f1))
+            time.sleep(0.09)
+
+        # 2. Glitch Midway
+        f2 = MORPH_DIR / "4_4_glitch_midway.png"
+        if f2.exists():
+            apply_desktop_wallpaper(str(f2))
+            time.sleep(0.09)
+
+        # 3. Solid HARSHA (Coding on Laptop)
+        f3 = MORPH_DIR / "6_6_harsha_coding.png"
+        if f3.exists():
+            apply_desktop_wallpaper(str(f3))
+            time.sleep(duration)
+
+        # 4. Return Morph
+        f4 = MORPH_DIR / "8_8_morph_return.png"
+        if f4.exists():
+            apply_desktop_wallpaper(str(f4))
+            time.sleep(0.09)
+
+        # 5. Return to active HIAK pose
+        poses_dir = get_poses_dir()
+        idx = get_current_pose_index()
+        active_pose = poses_dir / POSE_FILES[idx]
+        if active_pose.exists():
+            apply_desktop_wallpaper(str(active_pose))
+    except Exception as e:
+        print(f"Morph playback error: {e}")
+
+
+def is_over_text(pt_x: int, pt_y: int, screen_w: int, screen_h: int) -> bool:
+    """
+    Checks if cursor is over the 'hiak' text area on the desktop wallpaper.
+    Accounts for 1920x1080 aspect ratio filling 1920x1200 or 1920x1080 screens.
+    """
+    scale_x = screen_w / 1920.0
+    scale_y = screen_h / 1080.0
+    # Generous text hitbox: roughly center-right of the lockup
+    min_x = int(720 * scale_x)
+    max_x = int(1420 * scale_x)
+    min_y = int(460 * scale_y)
+    max_y = int(760 * scale_y)
+    return (min_x <= pt_x <= max_x) and (min_y <= pt_y <= max_y)
+
+
 def is_desktop_surface(pt_x, pt_y) -> bool:
     """Checks if the point clicked is the Windows desktop wallpaper background."""
     user32 = ctypes.windll.user32
@@ -112,30 +173,66 @@ def is_desktop_surface(pt_x, pt_y) -> bool:
 
 def listen_for_desktop_clicks():
     """
-    Polls GetAsyncKeyState for left mouse clicks on the desktop surface.
-    Extremely lightweight, zero admin rights, zero injection.
+    Polls cursor position and clicks on the desktop surface:
+    1. Deliberate hover over 'hiak' -> morphs into 'harsha' for 3 seconds and reverts.
+    2. Clicks on the desktop surface -> advances the cartoon character emotions.
     """
     user32 = ctypes.windll.user32
-    pt = wintypes.POINT()
-    was_down = False
-    last_advance_time = 0.0
+    try:
+        user32.SetProcessDPIAware()
+    except Exception:
+        pass
 
-    print("Desktop click listener active! Click your desktop wallpaper to move the character.")
+    screen_w = user32.GetSystemMetrics(0)
+    screen_h = user32.GetSystemMetrics(1)
+    pt = wintypes.POINT()
+
+    was_down = False
+    last_click_time = 0.0
+    last_morph_time = 0.0
+    hover_start_time = 0.0
+    is_hovering_text = False
+
+    print(f"Desktop listener active! Screen: {screen_w}x{screen_h}")
+    print("  • Hover over 'hiak' on desktop to morph into 'harsha' (3s auto-revert)")
+    print("  • Click on desktop wallpaper to advance cartoon character emotions")
+
     while True:
+        user32.GetCursorPos(ctypes.byref(pt))
+        on_desktop = is_desktop_surface(pt.x, pt.y)
+
+        # 1. HOVER DETECTION OVER HIAK TEXT ON DESKTOP
+        if on_desktop and is_over_text(pt.x, pt.y, screen_w, screen_h):
+            now = time.time()
+            if not is_hovering_text:
+                is_hovering_text = True
+                hover_start_time = now
+            elif (now - hover_start_time > 0.25) and (now - last_morph_time > 4.5):
+                # Deliberate hover > 250ms, cooldown expired
+                last_morph_time = now
+                print("✨ Deliberate hover over 'hiak' on desktop! Playing morph to 'harsha'...")
+                try:
+                    play_desktop_pixel_morph(duration=3.0)
+                    last_morph_time = time.time()
+                except Exception as e:
+                    print(f"Morph error: {e}")
+        else:
+            is_hovering_text = False
+
+        # 2. CLICK DETECTION (ADVANCE CARTOON MASCOT POSE)
         is_down = bool(user32.GetAsyncKeyState(0x01) & 0x8000)
         if is_down and not was_down:
             now = time.time()
-            if now - last_advance_time > 0.4:
-                user32.GetCursorPos(ctypes.byref(pt))
-                if is_desktop_surface(pt.x, pt.y):
-                    last_advance_time = now
+            if now - last_click_time > 0.35:
+                if on_desktop:
+                    last_click_time = now
                     try:
                         pose = advance_wallpaper_pose()
-                        print(f"Desktop clicked! Moved wallpaper to: {pose}")
+                        print(f"Desktop clicked! Moved mascot to: {pose}")
                     except Exception as e:
                         pass
         was_down = is_down
-        time.sleep(0.025)
+        time.sleep(0.03)
 
 
 if __name__ == "__main__":
