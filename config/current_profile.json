@@ -1,8 +1,8 @@
 {
-    "user_name": "Madhav",
-    "active_style": "hiak_moving_mascot",
+    "user_name": "Hiak",
+    "active_style": "hiak_opencode",
     "terminal": {
-        "opacity": 0.6,
+        "opacity": 0.65,
         "alignment": "bottomRight",
         "stretch": "uniformToFill",
         "apply_to_all_profiles": true
@@ -19,6 +19,11 @@
             "name": "Madhav",
             "persona": "Tech Creator & Coder",
             "favorite_style": "pixel_art"
+        },
+        {
+            "name": "Hiak",
+            "favorite_style": "hiak_tech_moving",
+            "persona": "Tech Creator & Coder"
         }
     ]
 }

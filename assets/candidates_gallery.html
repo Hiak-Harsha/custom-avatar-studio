@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HARSHA Mascot Candidates // Choose Your Favorite</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0A0A0A;
+      color: #EEEEEE;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 28px;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    p.subtitle {
+      color: #888888;
+      font-size: 15px;
+      margin-bottom: 36px;
+      text-align: center;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 30px;
+      max-width: 1200px;
+      width: 100%;
+    }
+    .card {
+      background: #141414;
+      border: 1px solid #282828;
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+    .card:hover {
+      border-color: #00f0ff;
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 240, 255, 0.15);
+    }
+    .card-img-wrap {
+      width: 100%;
+      background: #000;
+      border-bottom: 1px solid #222;
+    }
+    .card img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .card-body {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-family: monospace;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-weight: bold;
+      width: fit-content;
+    }
+    .b1 { background: #00363a; color: #00f0ff; border: 1px solid #005b63; }
+    .b2 { background: #002b4d; color: #38bdf8; border: 1px solid #0369a1; }
+    .b3 { background: #3b220a; color: #f59e0b; border: 1px solid #78350f; }
+    .b4 { background: #1e1b4b; color: #a855f7; border: 1px solid #4338ca; }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+    .card-desc {
+      font-size: 13px;
+      color: #999999;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⚡ HARSHA Character Candidates</h1>
+  <p class="subtitle">Pick which character should appear when your desktop morphs to <b>HARSHA</b></p>
+
+  <div class="grid">
+    <!-- Option 1 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="./mascots/candidates/candidate_1_cyber_tech_wallpaper.png" alt="Option 1">
+      </div>
+      <div class="card-body">
+        <span class="badge b1">Option 1</span>
+        <div class="card-title">🎧 Cyber-Tech Brick Mascot</div>
+        <div class="card-desc">Brick mascot equipped with glowing neon-cyan over-ear headphones and sleek dark AR developer glasses. Matches your tech creator persona!</div>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="./mascots/candidates/candidate_2_neon_cyan_wallpaper.png" alt="Option 2">
+      </div>
+      <div class="card-body">
+        <span class="badge b2">Option 2</span>
+        <div class="card-title">⚡ Neon-Cyan Electric Brick</div>
+        <div class="card-desc">Full electric cyan color-shift! When you hover, the scene dramatically transforms from warm orange HIAK to high-voltage electric cyan HARSHA.</div>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="./mascots/candidates/candidate_3_hacker_hoodie_wallpaper.png" alt="Option 3">
+      </div>
+      <div class="card-body">
+        <span class="badge b3">Option 3</span>
+        <div class="card-title">☕ Dev Hoodie & Steaming Coffee</div>
+        <div class="card-desc">Dark charcoal developer hoodie with a hot steaming coffee mug beside the coding laptop and cyber sticker details. Late-night developer energy.</div>
+      </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="card">
+      <div class="card-img-wrap">
+        <img src="./mascots/candidates/candidate_4_cyber_bot_wallpaper.png" alt="Option 4">
+      </div>
+      <div class="card-body">
+        <span class="badge b4">Option 4</span>
+        <div class="card-title">🤖 Floating Cyber-Bot Companion</div>
+        <div class="card-desc">A completely new futuristic companion: floating graphite chassis with dual cyan antennae, happy LED visor eyes, and blue hover thrusters.</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
