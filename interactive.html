@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIAK ⇄ HARSHA • OpenCode Interactive Identity</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background-color: #0A0A0A;
+      color: #EEEEEE;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 44px 50px;
+      background: rgba(18, 18, 18, 0.85);
+      border: 1px solid #282828;
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+      position: relative;
+    }
+
+    .header-badge {
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: #777777;
+      background: #121212;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid #282828;
+    }
+
+    .identity-stage {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+      padding: 14px 20px;
+    }
+
+    /* Text Container with prominent interactive target */
+    .text-wrapper {
+      position: relative;
+      cursor: pointer;
+      padding: 16px 22px;
+      border-radius: 14px;
+      border: 2px dashed #333333;
+      background: rgba(255, 255, 255, 0.015);
+      transition: all 0.25s ease;
+    }
+
+    .text-wrapper:hover, .text-wrapper.active-hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: #EEEEEE;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.12);
+    }
+
+    .hover-tag {
+      position: absolute;
+      top: -10px;
+      left: 18px;
+      font-size: 10px;
+      font-family: monospace;
+      letter-spacing: 1px;
+      background: #1c1c1c;
+      color: #aaaaaa;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      text-transform: uppercase;
+    }
+
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* Mascot box with explicit click feedback */
+    .mascot-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .mascot-box {
+      width: 144px;
+      height: 144px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      border-radius: 16px;
+      padding: 6px;
+      border: 1px solid #282828;
+      background: #121212;
+      transition: all 0.2s;
+    }
+
+    .mascot-box:hover {
+      border-color: #d97706;
+      background: #1a1510;
+      box-shadow: 0 0 20px rgba(217, 119, 6, 0.25);
+    }
+
+    .mascot-img {
+      width: 130px;
+      height: 130px;
+      object-fit: contain;
+      image-rendering: pixelated;
+      transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .mascot-box:active .mascot-img {
+      transform: scale(0.90);
+    }
+
+    .pose-badge {
+      font-size: 11px;
+      font-family: monospace;
+      color: #d97706;
+      background: #1c150c;
+      border: 1px solid #45260c;
+      padding: 4px 12px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .controls-bar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-test {
+      background: #1f1f1f;
+      color: #eeeeee;
+      border: 1px solid #3a3a3a;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-test:hover {
+      background: #2a2a2a;
+      border-color: #777777;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-family: monospace;
+      color: #888888;
+    }
+
+    .status-highlight {
+      color: #4ade80 !important;
+      font-weight: bold;
+    }
+
+    .instructions-box {
+      font-size: 13px;
+      color: #777777;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    kbd {
+      background: #1e1e1e;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 11px;
+      color: #ffffff;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header-badge">OpenCode Identity Matrix • Interactive Identity Engine</div>
+
+    <div class="identity-stage">
+      <!-- 1. Text Canvas: Hover deliberately over "hiak" (or click) to pixelate into "harsha" -->
+      <div class="text-wrapper" id="textTarget">
+        <div class="hover-tag">Hover or Click Text</div>
+        <canvas id="pixelCanvas" width="540" height="144"></canvas>
+      </div>
+
+      <!-- 2. Mascot Character: Click to cycle emotion poses -->
+      <div class="mascot-wrapper" id="mascotTarget">
+        <div class="mascot-box">
+          <img id="mascotImg" class="mascot-img" src="./mascots/hiak/neutral.png" alt="Orange Brick Mascot">
+        </div>
+        <div id="poseBadge" class="pose-badge">Pose: Neutral (1/7)</div>
+      </div>
+    </div>
+
+    <div class="controls-bar">
+      <button id="btnMorph" class="btn-test">⚡ Trigger Pixel Morph</button>
+      <div id="statusText" class="status-text">Displaying: <span style="color:#eee; font-weight:bold;">hiak</span></div>
+    </div>
+
+    <div class="instructions-box">
+      Hover cursor anywhere inside the dotted text box (or click it) to dissolve <kbd>hiak</kbd> into <kbd>harsha</kbd> for 3s.<br>
+      Click the orange character on the right to cycle through all 7 mascot emotions!
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('pixelCanvas');
+    const ctx = canvas.getContext('2d');
+    const textTarget = document.getElementById('textTarget');
+    const mascotImg = document.getElementById('mascotImg');
+    const mascotTarget = document.getElementById('mascotTarget');
+    const poseBadge = document.getElementById('poseBadge');
+    const statusText = document.getElementById('statusText');
+    const btnMorph = document.getElementById('btnMorph');
+
+    // OpenCode Colors
+    const BG = "#0A0A0A";
+    const GRAY = "#808080";
+    const GRAY_SHADOW = "#282828";
+    const WHITE = "#EEEEEE";
+    const WHITE_SHADOW = "#434343";
+
+    // 4x8 Glyph Patterns
+    const GLYPHS = {
+      'h': [
+        [1,0,0,0], [1,0,0,0], [1,1,1,0], [1,0,0,1],
+        [1,2,2,1], [1,2,2,1], [1,0,0,1], [0,0,0,0]
+      ],
+      'i': [
+        [0,0,0,0], [0,1,1,0], [0,0,0,0], [0,1,1,0],
+        [0,1,1,0], [0,2,2,0], [0,1,1,0], [0,0,0,0]
+      ],
+      'a': [
+        [0,0,0,0], [0,0,0,0], [0,1,1,1], [0,0,0,1],
+        [0,1,1,1], [1,2,2,1], [0,1,1,1], [0,0,0,0]
+      ],
+      'k': [
+        [1,0,0,0], [1,0,0,0], [1,0,0,1], [1,0,1,0],
+        [1,1,0,0], [1,2,1,0], [1,0,0,1], [0,0,0,0]
+      ],
+      'r': [
+        [0,0,0,0], [0,0,0,0], [1,1,1,0], [1,0,0,1],
+        [1,2,0,0], [1,2,0,0], [1,0,0,0], [0,0,0,0]
+      ],
+      's': [
+        [0,0,0,0], [0,0,0,0], [0,1,1,1], [1,0,0,0],
+        [0,1,1,0], [0,0,2,1], [1,1,1,0], [0,0,0,0]
+      ]
+    };
+
+    function buildGrid(text) {
+      const splitIdx = Math.floor(text.length / 2);
+      const rows = 8;
+      const chars = [];
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const glyph = GLYPHS[ch] || GLYPHS['h'];
+        const isGray = i < splitIdx;
+        const mainColor = isGray ? GRAY : WHITE;
+        const shadowColor = isGray ? GRAY_SHADOW : WHITE_SHADOW;
+
+        const charGrid = [];
+        for (let r = 0; r < rows; r++) {
+          const row = [];
+          for (let c = 0; c < 4; c++) {
+            const v = glyph[r][c];
+            if (v === 1) row.push(mainColor);
+            else if (v === 2) row.push(shadowColor);
+            else row.push(null);
+          }
+          charGrid.push(row);
+        }
+        chars.push(charGrid);
+      }
+
+      const grid = [];
+      for (let r = 0; r < rows; r++) {
+        const row = [];
+        for (let i = 0; i < chars.length; i++) {
+          if (i > 0) row.push(null);
+          row.push(...chars[i][r]);
+        }
+        grid.push(row);
+      }
+      return grid;
+    }
+
+    const gridHiak = buildGrid("hiak");
+    const gridHarsha = buildGrid("harsha");
+
+    const SCALE = 18;
+    const MAX_COLS = 30;
+    canvas.width = MAX_COLS * SCALE;
+    canvas.height = 8 * SCALE;
+
+    let progress = 0.0;       // 0.0 = hiak, 1.0 = harsha
+    let targetProgress = 0.0;
+    let revertTimer = null;
+
+    // Dissolve Floating Pixel Particles
+    let particles = [];
+
+    function spawnParticles(count = 25) {
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
+          size: SCALE * (Math.random() > 0.4 ? 1 : 0.5),
+          color: Math.random() > 0.5 ? WHITE : GRAY,
+          alpha: 1.0,
+          decay: 0.035 + Math.random() * 0.04
+        });
+      }
+    }
+
+    function render(currentProg) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const cols1 = gridHiak[0].length;
+      const cols2 = gridHarsha[0].length;
+      const pad1 = Math.floor((MAX_COLS - cols1) / 2);
+      const pad2 = Math.floor((MAX_COLS - cols2) / 2);
+
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < MAX_COLS; c++) {
+          const c1 = c - pad1;
+          const color1 = (c1 >= 0 && c1 < cols1) ? gridHiak[r][c1] : null;
+
+          const c2 = c - pad2;
+          const color2 = (c2 >= 0 && c2 < cols2) ? gridHarsha[r][c2] : null;
+
+          let drawColor = null;
+
+          if (currentProg <= 0.02) {
+            drawColor = color1;
+          } else if (currentProg >= 0.98) {
+            drawColor = color2;
+          } else {
+            const rand = Math.random();
+            if (rand < currentProg) {
+              if (color2 && Math.random() < 0.88) drawColor = color2;
+              else if (color1 && Math.random() < 0.15) drawColor = color1;
+              else if (Math.random() < 0.08) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
+            } else {
+              if (color1 && Math.random() < 0.88) drawColor = color1;
+              else if (color2 && Math.random() < 0.15) drawColor = color2;
+              else if (Math.random() < 0.08) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
+            }
+          }
+
+          if (drawColor) {
+            ctx.fillStyle = drawColor;
+            ctx.fillRect(c * SCALE, r * SCALE, SCALE, SCALE);
+          }
+        }
+      }
+
+      // Draw active particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= p.decay;
+
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        } else {
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+          ctx.restore();
+        }
+      }
+    }
+
+    function animate() {
+      const diff = targetProgress - progress;
+      if (Math.abs(diff) > 0.005) {
+        progress += diff * 0.12;
+        if (Math.random() < 0.45) spawnParticles(4);
+      } else {
+        progress = targetProgress;
+      }
+
+      render(progress);
+
+      if (progress > 0.8) {
+        statusText.innerHTML = 'Displaying: <span class="status-highlight">harsha</span> (Temporary reveal, reverts in 3s)';
+      } else if (progress < 0.2) {
+        statusText.innerHTML = 'Displaying: <span style="color:#eee; font-weight:bold;">hiak</span> (Default)';
+      } else {
+        statusText.innerHTML = 'Status: <span style="color:#d97706;">⚡ Dissolving into pixels...</span>';
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // ========================================================
+    // 1. TRIGGER MORPH TO HARSHA (ON HOVER OR CLICK)
+    // ========================================================
+    function triggerMorph() {
+      if (targetProgress === 1.0) return; // Already triggered
+
+      targetProgress = 1.0;
+      spawnParticles(35);
+      textTarget.classList.add('active-hover');
+
+      if (revertTimer) clearTimeout(revertTimer);
+
+      // Revert back to hiak after 3 seconds
+      revertTimer = setTimeout(() => {
+        targetProgress = 0.0;
+        spawnParticles(30);
+        textTarget.classList.remove('active-hover');
+      }, 3000);
+    }
+
+    // Attach to hover (mouseenter, mousemove, pointerenter)
+    textTarget.addEventListener('mouseenter', triggerMorph);
+    textTarget.addEventListener('pointerenter', triggerMorph);
+    textTarget.addEventListener('mousemove', () => {
+      if (progress < 0.1 && targetProgress === 0.0) {
+        triggerMorph();
+      }
+    });
+
+    // Also attach to click
+    textTarget.addEventListener('click', triggerMorph);
+    btnMorph.addEventListener('click', triggerMorph);
+
+    // ========================================================
+    // 2. MASCOT CARTOON CLICKING (CYCLES 7 EMOTION POSES)
+    // ========================================================
+    const POSES = [
+      { file: "neutral.png", label: "Pose: Neutral (1/7)" },
+      { file: "happy.png", label: "Pose: Happy 😄 (2/7)" },
+      { file: "excited.png", label: "Pose: Wave 👋 (3/7)" },
+      { file: "idea.png", label: "Pose: Idea 💡 (4/7)" },
+      { file: "cool.png", label: "Pose: Cool 😎 (5/7)" },
+      { file: "coding.png", label: "Pose: Coding 💻 (6/7)" },
+      { file: "sleepy.png", label: "Pose: Sleepy 😴 (7/7)" },
+    ];
+
+    let currentPoseIdx = 0;
+
+    mascotTarget.addEventListener('click', () => {
+      currentPoseIdx = (currentPoseIdx + 1) % POSES.length;
+      const pose = POSES[currentPoseIdx];
+
+      // Playful bounce
+      mascotImg.style.transform = "scale(1.22) rotate(4deg)";
+      setTimeout(() => {
+        mascotImg.src = `./mascots/hiak/${pose.file}`;
+        mascotImg.style.transform = "scale(1.0) rotate(0deg)";
+      }, 90);
+
+      poseBadge.textContent = pose.label;
+    });
+  </script>
+</body>
+</html>

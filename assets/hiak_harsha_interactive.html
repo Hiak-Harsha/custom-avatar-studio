@@ -28,12 +28,12 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 28px;
-      padding: 48px 56px;
-      background: rgba(18, 18, 18, 0.7);
-      border: 1px solid #242424;
+      gap: 24px;
+      padding: 44px 50px;
+      background: rgba(18, 18, 18, 0.85);
+      border: 1px solid #282828;
       border-radius: 20px;
-      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
       position: relative;
     }
 
@@ -41,7 +41,7 @@
       font-size: 11px;
       letter-spacing: 2.5px;
       text-transform: uppercase;
-      color: #707070;
+      color: #777777;
       background: #121212;
       padding: 6px 16px;
       border-radius: 20px;
@@ -52,22 +52,39 @@
       display: flex;
       align-items: center;
       gap: 40px;
-      padding: 16px 24px;
+      padding: 14px 20px;
     }
 
-    /* Text Container with clear hover target */
+    /* Text Container with prominent interactive target */
     .text-wrapper {
       position: relative;
-      cursor: crosshair;
-      padding: 12px 18px;
-      border-radius: 12px;
-      border: 1px solid transparent;
-      transition: border-color 0.3s, background 0.3s;
+      cursor: pointer;
+      padding: 16px 22px;
+      border-radius: 14px;
+      border: 2px dashed #333333;
+      background: rgba(255, 255, 255, 0.015);
+      transition: all 0.25s ease;
     }
 
-    .text-wrapper:hover {
-      background: rgba(255, 255, 255, 0.02);
-      border-color: #262626;
+    .text-wrapper:hover, .text-wrapper.active-hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: #EEEEEE;
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.12);
+    }
+
+    .hover-tag {
+      position: absolute;
+      top: -10px;
+      left: 18px;
+      font-size: 10px;
+      font-family: monospace;
+      letter-spacing: 1px;
+      background: #1c1c1c;
+      color: #aaaaaa;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      text-transform: uppercase;
     }
 
     canvas {
@@ -81,7 +98,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
       cursor: pointer;
     }
 
@@ -94,23 +111,27 @@
       position: relative;
       border-radius: 16px;
       padding: 6px;
-      transition: background 0.2s;
+      border: 1px solid #282828;
+      background: #121212;
+      transition: all 0.2s;
     }
 
     .mascot-box:hover {
-      background: rgba(255, 255, 255, 0.03);
+      border-color: #d97706;
+      background: #1a1510;
+      box-shadow: 0 0 20px rgba(217, 119, 6, 0.25);
     }
 
     .mascot-img {
-      width: 136px;
-      height: 136px;
+      width: 130px;
+      height: 130px;
       object-fit: contain;
       image-rendering: pixelated;
       transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .mascot-box:active .mascot-img {
-      transform: scale(0.92);
+      transform: scale(0.90);
     }
 
     .pose-badge {
@@ -119,91 +140,108 @@
       color: #d97706;
       background: #1c150c;
       border: 1px solid #45260c;
-      padding: 3px 10px;
+      padding: 4px 12px;
       border-radius: 12px;
       letter-spacing: 0.5px;
-      transition: opacity 0.2s;
     }
 
-    .instructions-bar {
+    .controls-bar {
       display: flex;
-      gap: 20px;
-      font-size: 13px;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-test {
+      background: #1f1f1f;
+      color: #eeeeee;
+      border: 1px solid #3a3a3a;
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-test:hover {
+      background: #2a2a2a;
+      border-color: #777777;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .status-text {
+      font-size: 12px;
+      font-family: monospace;
       color: #888888;
     }
 
-    .inst-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .status-highlight {
+      color: #4ade80 !important;
+      font-weight: bold;
+    }
+
+    .instructions-box {
+      font-size: 13px;
+      color: #777777;
+      line-height: 1.6;
+      text-align: center;
     }
 
     kbd {
-      background: #1c1c1c;
-      border: 1px solid #333333;
-      border-radius: 5px;
-      padding: 3px 8px;
+      background: #1e1e1e;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 2px 6px;
       font-size: 11px;
-      color: #DDDDDD;
+      color: #ffffff;
       font-family: monospace;
-    }
-
-    .status-pill {
-      font-size: 11px;
-      font-family: monospace;
-      color: #555555;
-    }
-
-    .status-active {
-      color: #4ade80 !important;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="header-badge">OpenCode Identity Matrix • Custom Interaction System</div>
+    <div class="header-badge">OpenCode Identity Matrix • Interactive Identity Engine</div>
 
     <div class="identity-stage">
-      <!-- 1. Text Canvas: Hover deliberately over "hiak" to pixelate into "harsha" -->
-      <div class="text-wrapper" id="textTarget" title="Hover deliberately over text to morph into HARSHA for 3 seconds">
+      <!-- 1. Text Canvas: Hover deliberately over "hiak" (or click) to pixelate into "harsha" -->
+      <div class="text-wrapper" id="textTarget">
+        <div class="hover-tag">Hover or Click Text</div>
         <canvas id="pixelCanvas" width="540" height="144"></canvas>
       </div>
 
       <!-- 2. Mascot Character: Click to cycle emotion poses -->
-      <div class="mascot-wrapper" id="mascotTarget" title="Click character to cycle emotion poses!">
+      <div class="mascot-wrapper" id="mascotTarget">
         <div class="mascot-box">
-          <img id="mascotImg" class="mascot-img" src="../assets/mascots/hiak/neutral.png" alt="Orange Brick Mascot">
+          <img id="mascotImg" class="mascot-img" src="./mascots/hiak/neutral.png" alt="Orange Brick Mascot">
         </div>
         <div id="poseBadge" class="pose-badge">Pose: Neutral (1/7)</div>
       </div>
     </div>
 
-    <div class="instructions-bar">
-      <div class="inst-item">
-        <span>✨ <b>Text:</b> Deliberately hover <kbd>HIAK</kbd> to pixelate into <kbd>HARSHA</kbd> (auto-reverts in 3s)</span>
-      </div>
-      <div class="inst-item">
-        <span>🖱️ <b>Mascot:</b> <kbd>Click Character</kbd> to cycle 7 emotion poses</span>
-      </div>
+    <div class="controls-bar">
+      <button id="btnMorph" class="btn-test">⚡ Trigger Pixel Morph</button>
+      <div id="statusText" class="status-text">Displaying: <span style="color:#eee; font-weight:bold;">hiak</span></div>
     </div>
 
-    <div class="status-pill" id="morphStatus">
-      State: [ HIAK - Default ]
+    <div class="instructions-box">
+      Hover cursor anywhere inside the dotted text box (or click it) to dissolve <kbd>hiak</kbd> into <kbd>harsha</kbd> for 3s.<br>
+      Click the orange character on the right to cycle through all 7 mascot emotions!
     </div>
   </div>
 
   <script>
-    // Elements
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
     const textTarget = document.getElementById('textTarget');
     const mascotImg = document.getElementById('mascotImg');
     const mascotTarget = document.getElementById('mascotTarget');
     const poseBadge = document.getElementById('poseBadge');
-    const morphStatus = document.getElementById('morphStatus');
+    const statusText = document.getElementById('statusText');
+    const btnMorph = document.getElementById('btnMorph');
 
-    // OpenCode Exact Palettes
+    // OpenCode Colors
     const BG = "#0A0A0A";
     const GRAY = "#808080";
     const GRAY_SHADOW = "#282828";
@@ -284,21 +322,20 @@
     canvas.width = MAX_COLS * SCALE;
     canvas.height = 8 * SCALE;
 
-    let progress = 0.0;       // 0.0 = HIAK, 1.0 = HARSHA
+    let progress = 0.0;       // 0.0 = hiak, 1.0 = harsha
     let targetProgress = 0.0;
-    let revertTimeout = null;
-    let isHovered = false;
+    let revertTimer = null;
 
-    // Dissolve Particle Dust
+    // Dissolve Floating Pixel Particles
     let particles = [];
 
-    function spawnGlitchParticles(amount = 20) {
-      for (let i = 0; i < amount; i++) {
+    function spawnParticles(count = 25) {
+      for (let i = 0; i < count; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 5,
-          vy: (Math.random() - 0.5) * 5,
+          vx: (Math.random() - 0.5) * 6,
+          vy: (Math.random() - 0.5) * 6,
           size: SCALE * (Math.random() > 0.4 ? 1 : 0.5),
           color: Math.random() > 0.5 ? WHITE : GRAY,
           alpha: 1.0,
@@ -332,13 +369,13 @@
           } else {
             const rand = Math.random();
             if (rand < currentProg) {
-              if (color2 && Math.random() < 0.85) drawColor = color2;
+              if (color2 && Math.random() < 0.88) drawColor = color2;
               else if (color1 && Math.random() < 0.15) drawColor = color1;
-              else if (Math.random() < 0.06) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
+              else if (Math.random() < 0.08) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
             } else {
-              if (color1 && Math.random() < 0.85) drawColor = color1;
+              if (color1 && Math.random() < 0.88) drawColor = color1;
               else if (color2 && Math.random() < 0.15) drawColor = color2;
-              else if (Math.random() < 0.06) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
+              else if (Math.random() < 0.08) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
             }
           }
 
@@ -349,7 +386,7 @@
         }
       }
 
-      // Draw active floating pixel particles
+      // Draw active particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
@@ -371,8 +408,8 @@
     function animate() {
       const diff = targetProgress - progress;
       if (Math.abs(diff) > 0.005) {
-        progress += diff * 0.14;
-        if (Math.random() < 0.4) spawnGlitchParticles(4);
+        progress += diff * 0.12;
+        if (Math.random() < 0.45) spawnParticles(4);
       } else {
         progress = targetProgress;
       }
@@ -380,13 +417,11 @@
       render(progress);
 
       if (progress > 0.8) {
-        morphStatus.textContent = "State: [ HARSHA - Temporary Reveal ]";
-        morphStatus.classList.add("status-active");
+        statusText.innerHTML = 'Displaying: <span class="status-highlight">harsha</span> (Temporary reveal, reverts in 3s)';
       } else if (progress < 0.2) {
-        morphStatus.textContent = "State: [ HIAK - Default ]";
-        morphStatus.classList.remove("status-active");
+        statusText.innerHTML = 'Displaying: <span style="color:#eee; font-weight:bold;">hiak</span> (Default)';
       } else {
-        morphStatus.textContent = "State: [ Pixelating Dissolve Transition... ]";
+        statusText.innerHTML = 'Status: <span style="color:#d97706;">⚡ Dissolving into pixels...</span>';
       }
 
       requestAnimationFrame(animate);
@@ -395,27 +430,37 @@
     animate();
 
     // ========================================================
-    // 1. DELIBERATE HOVER ON TEXT TARGET
+    // 1. TRIGGER MORPH TO HARSHA (ON HOVER OR CLICK)
     // ========================================================
-    // When user hovers on HIAK: pixelates to HARSHA, stays 3s, then auto-reverts
-    textTarget.addEventListener('mouseenter', () => {
-      isHovered = true;
+    function triggerMorph() {
+      if (targetProgress === 1.0) return; // Already triggered
+
       targetProgress = 1.0;
-      spawnGlitchParticles(20);
+      spawnParticles(35);
+      textTarget.classList.add('active-hover');
 
-      if (revertTimeout) clearTimeout(revertTimeout);
+      if (revertTimer) clearTimeout(revertTimer);
 
-      // Hold on HARSHA for 3 seconds, then return to HIAK
-      revertTimeout = setTimeout(() => {
+      // Revert back to hiak after 3 seconds
+      revertTimer = setTimeout(() => {
         targetProgress = 0.0;
-        spawnGlitchParticles(20);
+        spawnParticles(30);
+        textTarget.classList.remove('active-hover');
       }, 3000);
+    }
+
+    // Attach to hover (mouseenter, mousemove, pointerenter)
+    textTarget.addEventListener('mouseenter', triggerMorph);
+    textTarget.addEventListener('pointerenter', triggerMorph);
+    textTarget.addEventListener('mousemove', () => {
+      if (progress < 0.1 && targetProgress === 0.0) {
+        triggerMorph();
+      }
     });
 
-    textTarget.addEventListener('mouseleave', () => {
-      isHovered = false;
-      // If mouse leaves early, let the 3s timer or user exit cleanly revert it
-    });
+    // Also attach to click
+    textTarget.addEventListener('click', triggerMorph);
+    btnMorph.addEventListener('click', triggerMorph);
 
     // ========================================================
     // 2. MASCOT CARTOON CLICKING (CYCLES 7 EMOTION POSES)
@@ -436,10 +481,10 @@
       currentPoseIdx = (currentPoseIdx + 1) % POSES.length;
       const pose = POSES[currentPoseIdx];
 
-      // Bounce mascot animation
+      // Playful bounce
       mascotImg.style.transform = "scale(1.22) rotate(4deg)";
       setTimeout(() => {
-        mascotImg.src = `../assets/mascots/hiak/${pose.file}`;
+        mascotImg.src = `./mascots/hiak/${pose.file}`;
         mascotImg.style.transform = "scale(1.0) rotate(0deg)";
       }, 90);
 
