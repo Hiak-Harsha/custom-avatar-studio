@@ -2,8 +2,9 @@
 Desktop Wallpaper Pose Animator & Interaction Engine
 Robust, crash-proof Windows background engine for desktop wallpaper interactions:
 1. INSTANT HOVER: Deliberately hovering cursor over 'hiak' smoothly pixel-morphs into 'harsha' (Option 4 Cyber-Bot), holds for 2.6s, and returns to 'hiak'.
-2. ALWAYS-ON CLICKS: Clicking anywhere on the desktop wallpaper instantly advances mascot emotion poses.
-3. PERSISTENT & CRASH-PROOF: Auto-attaches to the interactive user desktop, logs to logs/animator.log, and recovers automatically from any system event.
+2. PURE PIXELS ONLY: While pixelating/animating, ONLY the glitching pixels are shown (NO cartoon character at all).
+3. ALWAYS-ON CLICKS: Clicking anywhere on the desktop wallpaper instantly advances mascot emotion poses.
+4. DPI-AWARE & PERSISTENT: Auto-attaches to the interactive user desktop, accounts for 150% scaling, and recovers automatically.
 """
 import ctypes
 from ctypes import wintypes
@@ -34,35 +35,38 @@ POSE_FILES = [
     "7_sleepy.png"
 ]
 
-# Ensure Win32 user32 is available
 user32 = ctypes.windll.user32
 kernel32 = ctypes.windll.kernel32
+
+# Enable Per-Monitor v2 DPI Awareness so coordinates match physical 1920x1200
+try:
+    shcore = ctypes.windll.shcore
+    shcore.SetProcessDpiAwareness(2) # PROCESS_PER_MONITOR_DPI_AWARE
+except Exception:
+    try:
+        user32.SetProcessDPIAware()
+    except Exception:
+        pass
 
 # Win32 POINT structure for 64-bit systems
 class POINT(ctypes.Structure):
     _fields_ = [("x", ctypes.c_long), ("y", ctypes.c_long)]
 
-# Setup ctypes signatures to prevent 64-bit truncation
-try:
-    user32.SetProcessDPIAware()
-except Exception:
-    pass
-
 user32.WindowFromPoint.argtypes = [POINT]
 user32.WindowFromPoint.restype = wintypes.HWND
-user32.GetCursorPos.argtypes = [ctypes.POINTER(POINT)]
+user32.GetCursorPos.argtypes = [ctypes.c_void_p]
 user32.GetCursorPos.restype = wintypes.BOOL
 user32.GetAncestor.argtypes = [wintypes.HWND, wintypes.UINT]
 user32.GetAncestor.restype = wintypes.HWND
 user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
 user32.GetClassNameW.restype = ctypes.c_int
+user32.GetForegroundWindow.restype = wintypes.HWND
 
 
 def log_msg(msg: str):
     """Appends timestamped diagnostic messages to logs/animator.log."""
     try:
         LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
-        # Keep log file under 500KB
         if LOG_FILE.exists() and LOG_FILE.stat().st_size > 500_000:
             LOG_FILE.unlink(missing_ok=True)
         ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -75,7 +79,6 @@ def log_msg(msg: str):
 def ensure_interactive_desktop() -> bool:
     """
     Ensures the current thread is attached to the Windows interactive user desktop ('default').
-    Required when spawned from background processes, startup entries, or sandbox sessions.
     """
     GENERIC_ALL = 0x10000000
     try:
@@ -136,52 +139,60 @@ def advance_wallpaper_pose() -> str:
 
 def is_over_text(pt_x: int, pt_y: int, screen_w: int, screen_h: int) -> bool:
     """
-    Checks if cursor is deliberately hovering over the 'hiak' text area on the 1920x1200 medium centered wallpaper.
-    Exact 'hiak' text bounding box: X=[756, 1022], Y=[544, 656].
+    Checks if cursor is deliberately hovering over the 'hiak' lockup on the 1920x1200 medium centered wallpaper.
+    Physical 'hiak' text box: X=[756, 1022], Y=[544, 656].
+    Generous comfortable trigger zone: X=[680, 1100], Y=[480, 720].
     """
     scale_x = screen_w / 1920.0
     scale_y = screen_h / 1200.0
-    min_x = int(720 * scale_x)
-    max_x = int(1050 * scale_x)
-    min_y = int(515 * scale_y)
-    max_y = int(685 * scale_y)
+    min_x = int(680 * scale_x)
+    max_x = int(1100 * scale_x)
+    min_y = int(480 * scale_y)
+    max_y = int(720 * scale_y)
     return (min_x <= pt_x <= max_x) and (min_y <= pt_y <= max_y)
 
 
 def is_desktop_surface(pt_x: int, pt_y: int) -> bool:
     """
-    Accurately verifies if (pt_x, pt_y) is on the Windows desktop wallpaper.
-    Handles Windows 11 hidden icons, empty desktop areas, and ignores foreground app windows.
+    Verifies if (pt_x, pt_y) or the active foreground is on the Windows desktop wallpaper.
+    Accounts for hidden icons, WorkerW, Progman, and ignore open application windows.
     """
     try:
+        # Check foreground window first
+        fg_hwnd = user32.GetForegroundWindow()
+        if fg_hwnd:
+            fg_root = user32.GetAncestor(fg_hwnd, 2)
+            if not fg_root:
+                fg_root = fg_hwnd
+            progman = user32.FindWindowW("Progman", None)
+            if fg_root == progman:
+                return True
+            buf = ctypes.create_unicode_buffer(256)
+            user32.GetClassNameW(fg_root, buf, 256)
+            if buf.value in ["Progman", "WorkerW"]:
+                return True
+
+        # Check window directly under cursor point
         pt = POINT(pt_x, pt_y)
         hwnd = user32.WindowFromPoint(pt)
-        
-        # If WindowFromPoint returns NULL or Desktop Window handle, the cursor is directly on wallpaper
         if not hwnd or hwnd == user32.GetDesktopWindow():
             return True
 
-        # Check root ancestor (GA_ROOT = 2)
-        GA_ROOT = 2
-        root = user32.GetAncestor(hwnd, GA_ROOT)
+        root = user32.GetAncestor(hwnd, 2)
         if not root:
             root = hwnd
 
-        progman = user32.FindWindowW("Progman", "Program Manager")
+        progman = user32.FindWindowW("Progman", None)
         if root == progman:
             return True
 
         buf = ctypes.create_unicode_buffer(256)
         user32.GetClassNameW(root, buf, 256)
-        rname = buf.value
-
-        if rname in ["Progman", "WorkerW"]:
+        if buf.value in ["Progman", "WorkerW"]:
             return True
 
-        # Also check direct window class (e.g. SysListView32, WorkerW)
         user32.GetClassNameW(hwnd, buf, 256)
-        cname = buf.value
-        if cname in ["SysListView32", "WorkerW", "Progman", "SHELLDLL_DefView"]:
+        if buf.value in ["SysListView32", "WorkerW", "Progman", "SHELLDLL_DefView"]:
             return True
 
         return False
@@ -193,16 +204,14 @@ def is_desktop_surface(pt_x: int, pt_y: int) -> bool:
 def listen_for_desktop_clicks():
     """
     High-frequency non-blocking state machine for desktop wallpaper interactions:
-    1. INSTANT HOVER: The moment cursor touches 'hiak', pixel morph to 'harsha' begins.
+    1. INSTANT HOVER: Deliberate hover on 'hiak' triggers pixel morph to 'harsha' (pure pixels during transition).
     2. ALWAYS-ON CLICKS: Clicks on desktop wallpaper advance mascot emotions instantly.
-    3. CRASH-PROOF: Auto-recovers from any display change, sleep/wake, or desktop lock.
+    3. DPI-AWARE & SELF-HEALING: Recovers automatically from lock screens or display changes.
     """
-    log_msg("Starting HIAK Mascot Studio Wallpaper Engine...")
+    log_msg("Starting HIAK Mascot Studio Wallpaper Engine (DPI-Aware)...")
     
-    # Outer supervisor loop: ensures the service NEVER dies
     while True:
         try:
-            # 1. Ensure connected to user's interactive desktop
             ensure_interactive_desktop()
             
             screen_w = user32.GetSystemMetrics(0)
@@ -222,17 +231,14 @@ def listen_for_desktop_clicks():
             was_down = False
             last_click_time = 0.0
 
-            log_msg(f"Listener active! Display: {screen_w}x{screen_h}. Monitoring desktop...")
+            log_msg(f"Engine active! Resolution: {screen_w}x{screen_h}. Monitoring clicks & hover...")
 
-            # 2. Main 60Hz interaction loop
             while True:
                 now = time.time()
                 
-                # Fetch cursor position on interactive desktop
                 if not user32.GetCursorPos(ctypes.byref(pt)):
-                    # Re-attach desktop if connection was lost (e.g. lock screen or UAC)
                     ensure_interactive_desktop()
-                    time.sleep(0.1)
+                    time.sleep(0.08)
                     continue
 
                 on_desktop = is_desktop_surface(pt.x, pt.y)
@@ -246,8 +252,7 @@ def listen_for_desktop_clicks():
                         last_click_time = now
                         try:
                             pose = advance_wallpaper_pose()
-                            log_msg(f"Desktop clicked! Advanced mascot to: {pose}")
-                            # If in morph state, reset to idle with the newly clicked pose
+                            log_msg(f"⚡ Desktop clicked! Advanced mascot to: {pose}")
                             if current_state != STATE_IDLE:
                                 current_state = STATE_IDLE
                                 last_hover_exit_time = now
@@ -261,11 +266,10 @@ def listen_for_desktop_clicks():
                 hovering = on_desktop and is_over_text(pt.x, pt.y, screen_w, screen_h)
 
                 if hovering:
-                    # Trigger immediately on first touch (if idle and cooldown expired)
-                    if current_state == STATE_IDLE and (now - last_hover_exit_time > 0.6):
+                    if current_state == STATE_IDLE and (now - last_hover_exit_time > 0.5):
                         current_state = STATE_MORPH_IN_1
                         state_start_time = now
-                        log_msg("Hover over 'hiak'! Morphing into 'harsha' (Option 4 Cyber-Bot)...")
+                        log_msg("✨ Deliberate hover on 'hiak'! Pixel dissolving (pure pixels)...")
                         try:
                             f1 = MORPH_DIR / "3_3_dissolve_start.png"
                             if f1.exists():
@@ -278,7 +282,7 @@ def listen_for_desktop_clicks():
                 was_hovering = hovering
 
                 # ========================================================
-                # 3. NON-BLOCKING MORPH FRAME SEQUENCING
+                # 3. NON-BLOCKING MORPH FRAME SEQUENCING (PURE PIXELS)
                 # ========================================================
                 if current_state == STATE_MORPH_IN_1:
                     if now - state_start_time >= 0.04:
@@ -301,6 +305,7 @@ def listen_for_desktop_clicks():
                                 f3 = MORPH_DIR / "6_6_harsha_coding.png"
                             if f3.exists():
                                 apply_desktop_wallpaper(str(f3))
+                                log_msg("HARSHA active with Option 4 Floating Cyber-Bot!")
                         except Exception:
                             pass
 
@@ -321,19 +326,19 @@ def listen_for_desktop_clicks():
                         current_state = STATE_IDLE
                         last_hover_exit_time = now
                         try:
-                            # Restore active HIAK mascot pose
                             poses_dir = get_poses_dir()
                             idx = get_current_pose_index()
                             active_pose = poses_dir / POSE_FILES[idx]
                             if active_pose.exists():
                                 apply_desktop_wallpaper(str(active_pose))
+                                log_msg("Returned to HIAK with Orange Brick Mascot!")
                         except Exception:
                             pass
 
                 time.sleep(0.015)
 
         except Exception as e:
-            log_msg(f"Unexpected error in interaction supervisor: {e}. Recovering in 1s...")
+            log_msg(f"Supervisor recovered from exception: {e}")
             time.sleep(1.0)
 
 

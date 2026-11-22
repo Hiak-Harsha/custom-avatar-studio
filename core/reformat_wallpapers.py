@@ -5,6 +5,8 @@ STRICT MASCOT DISPLAY RULE:
 - WHILE ANIMATING / PIXELATING: Shows ONLY the glitching/dissolving PIXELS! NO CARTOON MASCOT AT ALL!
 - AFTER hover / HARSHA state: Shows HARSHA with designated Option 4 Floating Cyber-Bot
 - WHILE RETURNING / PIXELATING: Shows ONLY the glitching/dissolving PIXELS! NO CARTOON MASCOT AT ALL!
+
+Uses GIF disposal=2 (Restore to background) so no previous frame pixels leak through!
 """
 import sys
 from pathlib import Path
@@ -86,18 +88,20 @@ def reformat_all():
     cyber_bot_img = Image.open(str(BOT_DIR / "happy.png")).convert("RGBA")
 
     stages = [
-        # Stage 1: BEFORE hover -> Pure HIAK + Designated Orange Brick Mascot
+        # Frame 0: BEFORE hover -> Pure HIAK + Designated Orange Brick Mascot
         (0.0, brick_img, "1_1_hiak_solid.png"),
-        (0.0, brick_img, "2_2_hiak_cool.png"),
-        # Stage 2: WHILE ANIMATING -> PURE PIXELS ONLY! NO MASCOT!
-        (0.3, None, "3_3_dissolve_start.png"),
-        (0.65, None, "4_4_glitch_midway.png"),
+        # Frame 1: WHILE ANIMATING -> PURE PIXELS ONLY! NO MASCOT!
+        (0.25, None, "3_3_dissolve_start.png"),
+        # Frame 2: HEAVY GLITCH -> PURE PIXELS ONLY! NO MASCOT!
+        (0.55, None, "4_4_glitch_midway.png"),
+        # Frame 3: RESOLVING INTO HARSHA -> PURE PIXELS ONLY! NO MASCOT!
         (0.85, None, "5_5_harsha_forming.png"),
-        # Stage 3: AFTER hover -> Pure HARSHA + Designated Option 4 Cyber-Bot!
+        # Frame 4: AFTER hover -> Pure HARSHA + Designated Option 4 Cyber-Bot!
         (1.0, cyber_bot_img, "6_6_harsha_cyber_bot_coding.png"),
-        (1.0, cyber_bot_img, "7_7_harsha_cyber_bot_happy.png"),
-        # Stage 4: WHILE RETURNING -> PURE PIXELS ONLY! NO MASCOT!
-        (0.45, None, "8_8_morph_return.png"),
+        # Frame 5: WHILE RETURNING -> PURE PIXELS ONLY! NO MASCOT!
+        (0.65, None, "8_8_morph_return.png"),
+        # Frame 6: GLITCH RETURNING -> PURE PIXELS ONLY! NO MASCOT!
+        (0.30, None, "9_9_morph_return_mid.png"),
     ]
     
     frames_1200p = []
@@ -108,19 +112,26 @@ def reformat_all():
         frames_1200p.append(wp)
         
     # Alias for backwards compatibility
-    frames_1200p[5].save(str(MORPH_DIR / "6_6_harsha_coding.png"))
+    frames_1200p[4].save(str(MORPH_DIR / "6_6_harsha_coding.png"))
+    frames_1200p[0].save(str(MORPH_DIR / "2_2_hiak_cool.png"))
+    frames_1200p[4].save(str(MORPH_DIR / "7_7_harsha_cyber_bot_happy.png"))
 
-    # Save animated morph GIF for Windows Terminal background & preview
+    # Save animated morph GIF with explicit disposal=2 on ALL frames
+    # disposal=2 ensures every frame restores to background so no previous character can bleed through!
+    durations = [2400, 140, 160, 180, 2800, 160, 180]
+    disposals = [2] * len(frames_1200p)
+    
     gif_path = WALLPAPERS_DIR / "hiak_harsha_morph.gif"
     frames_1200p[0].save(
         str(gif_path),
         save_all=True,
         append_images=frames_1200p[1:],
-        duration=[1500, 1000, 160, 180, 200, 2200, 1200, 220],
+        duration=durations,
+        disposal=disposals,
         loop=0,
-        optimize=True
+        optimize=False
     )
-    print("  ✅ Morph sequence & animated GIF updated: PURE PIXELS ONLY during animation!")
+    print(f"  ✅ Morph sequence & animated GIF updated with disposal=2: PURE PIXELS ONLY during animation! ({len(frames_1200p)} frames)")
 
 
 if __name__ == "__main__":
