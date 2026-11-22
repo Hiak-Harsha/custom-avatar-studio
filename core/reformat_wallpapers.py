@@ -1,9 +1,9 @@
 """
 Reformat Wallpaper Suite for Medium Scale & Exact 1920x1200 Center Alignment
-- Native 1920x1200 16:10 canvas matching monitor resolution (no zoom/crop)
-- Medium 14px unit-block grid (exact OpenCode aesthetic standard)
-- Perfectly centered horizontally (X=960) and vertically (Y=600)
-- Applies to all 7 HIAK poses & all HIAK <-> HARSHA Cyber-Bot morph frames
+ONLY uses the designated cartoons:
+- HIAK: Designated Orange Brick Mascot
+- HARSHA: Designated Option 4 Floating Cyber-Bot
+NO intermediate or unrelated cartoons appear during the transition!
 """
 import sys
 from pathlib import Path
@@ -47,12 +47,12 @@ def composite_centered(text_img: Image.Image, mascot_img: Image.Image, canvas_w=
 
 
 def reformat_all():
-    print(f"📐 Reformatting wallpapers to {SCREEN_W}x{SCREEN_H} (Medium Scale {SCALE}px, Dead-Center)...")
+    print(f"📐 Reformatting wallpapers: ONLY designated cartoons (Orange Brick for HIAK, Cyber-Bot for HARSHA)...")
     
     # 1. Base HIAK logo at scale 14
     hiak_logo = render_opencode_image("hiak", scale=SCALE, bg_color=None)
     
-    # 2. Re-render 7 HIAK poses in assets/wallpapers/poses
+    # 2. Re-render 7 HIAK poses in assets/wallpapers/poses (Designated Orange Brick poses)
     POSES_DIR.mkdir(parents=True, exist_ok=True)
     pose_files = [
         ("1_neutral.png", "neutral.png"),
@@ -69,28 +69,38 @@ def reformat_all():
         wp.save(str(POSES_DIR / out_name), quality=95)
     print("  ✅ 7 HIAK desktop poses updated (1920x1200 medium centered)")
 
-    # 3. Re-render HIAK <-> HARSHA Cyber-Bot morph sequence
+    # 3. Clean Morph Sequence: ONLY the designated Orange Brick & Option 4 Cyber-Bot!
+    # No random / intermediate cartoon faces!
     MORPH_DIR.mkdir(parents=True, exist_ok=True)
+    
+    # Designated mascot assets
+    brick_img = Image.open(str(MASCOTS_DIR / "neutral.png")).convert("RGBA")
+    cyber_bot_img = Image.open(str(BOT_DIR / "happy.png")).convert("RGBA")
+
     stages = [
-        (0.0, MASCOTS_DIR / "neutral.png", "1_1_hiak_solid.png"),
-        (0.0, MASCOTS_DIR / "cool.png", "2_2_hiak_cool.png"),
-        (0.3, MASCOTS_DIR / "thinking.png", "3_3_dissolve_start.png"),
-        (0.65, MASCOTS_DIR / "excited.png", "4_4_glitch_midway.png"),
-        (0.9, BOT_DIR / "coding.png", "5_5_harsha_forming.png"),
-        (1.0, BOT_DIR / "coding.png", "6_6_harsha_cyber_bot_coding.png"),
-        (1.0, BOT_DIR / "happy.png", "7_7_harsha_cyber_bot_happy.png"),
-        (0.5, MASCOTS_DIR / "starstruck.png", "8_8_morph_return.png"),
+        # Stage 1: Pure HIAK + Designated Orange Brick
+        (0.0, brick_img, "1_1_hiak_solid.png"),
+        (0.0, brick_img, "2_2_hiak_cool.png"),
+        # Stage 2: Dissolve starts: HIAK text glitches, Orange Brick stays clean!
+        (0.3, brick_img, "3_3_dissolve_start.png"),
+        # Stage 3: Glitch midway: text morphing, Cyber-Bot takes over!
+        (0.7, cyber_bot_img, "4_4_glitch_midway.png"),
+        # Stage 4: Pure HARSHA + Designated Option 4 Cyber-Bot!
+        (1.0, cyber_bot_img, "5_5_harsha_forming.png"),
+        (1.0, cyber_bot_img, "6_6_harsha_cyber_bot_coding.png"),
+        (1.0, cyber_bot_img, "7_7_harsha_cyber_bot_happy.png"),
+        # Stage 5: Return morph: text dissolves back to HIAK with Orange Brick!
+        (0.4, brick_img, "8_8_morph_return.png"),
     ]
     
     frames_1200p = []
-    for prog, m_path, out_name in stages:
-        m_img = Image.open(str(m_path)).convert("RGBA")
+    for prog, m_img, out_name in stages:
         text_img = generate_morph_text_image("hiak", "harsha", prog, scale=SCALE)
         wp = composite_centered(text_img, m_img)
         wp.save(str(MORPH_DIR / out_name), quality=95)
         frames_1200p.append(wp)
         
-    # Also save standard 6_6_harsha_coding.png alias for backwards compatibility
+    # Alias for backwards compatibility
     frames_1200p[5].save(str(MORPH_DIR / "6_6_harsha_coding.png"))
 
     # Save animated morph GIF
@@ -99,11 +109,11 @@ def reformat_all():
         str(gif_path),
         save_all=True,
         append_images=frames_1200p[1:],
-        duration=[1200, 1000, 250, 300, 350, 1200, 1000, 350],
+        duration=[1200, 1000, 180, 200, 300, 1500, 1200, 250],
         loop=0,
         optimize=True
     )
-    print("  ✅ Morph sequence & animated GIF updated (1920x1200 medium centered)")
+    print("  ✅ Morph sequence & animated GIF updated: ONLY designated cartoons!")
 
 
 if __name__ == "__main__":
