@@ -52,10 +52,11 @@ def composite_frame(text_img: Image.Image, mascot_img: Image.Image = None, canva
     return canvas
 
 
-def generate_morph_text_image(text1: str, text2: str, progress: float, scale: int = 18) -> Image.Image:
+def generate_morph_text_image(text1: str, text2: str, progress: float, scale: int = 18, align: str = "left") -> Image.Image:
     """
     Renders an intermediate pixelated dissolve state between text1 and text2.
     progress: 0.0 (100% text1) -> 1.0 (100% text2).
+    align: 'left' anchors the shared first letter (e.g. 'h' in hiak & harsha) perfectly in place.
     """
     grid1 = build_text_grid(text1)
     grid2 = build_text_grid(text2)
@@ -65,9 +66,12 @@ def generate_morph_text_image(text1: str, text2: str, progress: float, scale: in
     cols2 = len(grid2[0]) if grid2 else 0
     max_cols = max(cols1, cols2)
     
-    # Pad grids to max_cols (center aligned)
-    pad1_left = (max_cols - cols1) // 2
-    pad2_left = (max_cols - cols2) // 2
+    if align == "left":
+        pad1_left = 0
+        pad2_left = 0
+    else:
+        pad1_left = (max_cols - cols1) // 2
+        pad2_left = (max_cols - cols2) // 2
     
     img_w = max_cols * scale
     img_h = rows * scale
@@ -100,26 +104,20 @@ def generate_morph_text_image(text1: str, text2: str, progress: float, scale: in
                 if is_active2:
                     chosen_color = color2
             else:
-                # Glitch / Dissolve probability
-                threshold = progress
-                # Add digital pixel scatter / noise
-                noise = random.random()
-                
-                if noise < threshold:
-                    # Tending toward text2
-                    if is_active2 and random.random() < 0.85:
-                        chosen_color = color2
-                    elif is_active1 and random.random() < 0.2:
+                if is_active1 and is_active2:
+                    if color1 == color2:
                         chosen_color = color1
-                    elif random.random() < 0.12: # glitch particle
+                    else:
+                        chosen_color = color2 if random.random() < progress else color1
+                elif is_active2:
+                    if random.random() < progress:
+                        chosen_color = color2
+                    elif random.random() < 0.25:
                         chosen_color = random.choice([GRAY, WHITE, GRAY_SHADOW, WHITE_SHADOW])
-                else:
-                    # Tending toward text1
-                    if is_active1 and random.random() < 0.85:
+                elif is_active1:
+                    if random.random() > progress:
                         chosen_color = color1
-                    elif is_active2 and random.random() < 0.2:
-                        chosen_color = color2
-                    elif random.random() < 0.12: # glitch particle
+                    elif random.random() < 0.25:
                         chosen_color = random.choice([GRAY, WHITE, GRAY_SHADOW, WHITE_SHADOW])
             
             if chosen_color:

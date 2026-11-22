@@ -275,7 +275,7 @@ def listen_for_desktop_clicks():
                         try:
                             f1 = MORPH_DIR / "3_3_dissolve_start.png"
                             if f1.exists():
-                                apply_desktop_wallpaper(str(f1))
+                                apply_desktop_wallpaper(str(f1), is_transient=True)
                         except Exception as e:
                             log_msg(f"Frame 1 error: {e}")
                 else:
@@ -294,7 +294,7 @@ def listen_for_desktop_clicks():
                         try:
                             f2 = MORPH_DIR / "4_4_glitch_midway.png"
                             if f2.exists():
-                                apply_desktop_wallpaper(str(f2))
+                                apply_desktop_wallpaper(str(f2), is_transient=True)
                         except Exception as e:
                             log_msg(f"Frame 2 error: {e}")
 
@@ -306,7 +306,7 @@ def listen_for_desktop_clicks():
                         try:
                             f3 = MORPH_DIR / "5_5_harsha_forming.png"
                             if f3.exists():
-                                apply_desktop_wallpaper(str(f3))
+                                apply_desktop_wallpaper(str(f3), is_transient=True)
                         except Exception as e:
                             log_msg(f"Frame 3 error: {e}")
 
@@ -320,7 +320,7 @@ def listen_for_desktop_clicks():
                             if not f4.exists():
                                 f4 = MORPH_DIR / "6_6_harsha_coding.png"
                             if f4.exists():
-                                apply_desktop_wallpaper(str(f4))
+                                apply_desktop_wallpaper(str(f4), is_transient=False)
                                 log_msg("HARSHA active with Option 4 Floating Cyber-Bot!")
                         except Exception as e:
                             log_msg(f"Harsha solid error: {e}")
@@ -333,7 +333,7 @@ def listen_for_desktop_clicks():
                         try:
                             f5 = MORPH_DIR / "8_8_morph_return.png"
                             if f5.exists():
-                                apply_desktop_wallpaper(str(f5))
+                                apply_desktop_wallpaper(str(f5), is_transient=True)
                         except Exception as e:
                             log_msg(f"Frame 5 error: {e}")
 
@@ -345,7 +345,7 @@ def listen_for_desktop_clicks():
                         try:
                             f6 = MORPH_DIR / "9_9_morph_return_mid.png"
                             if f6.exists():
-                                apply_desktop_wallpaper(str(f6))
+                                apply_desktop_wallpaper(str(f6), is_transient=True)
                         except Exception as e:
                             log_msg(f"Frame 6 error: {e}")
 
@@ -359,7 +359,7 @@ def listen_for_desktop_clicks():
                             idx = get_current_pose_index()
                             active_pose = poses_dir / POSE_FILES[idx]
                             if active_pose.exists():
-                                apply_desktop_wallpaper(str(active_pose))
+                                apply_desktop_wallpaper(str(active_pose), is_transient=False)
                                 log_msg("Returned to HIAK with Brown Claude Mascot!")
                         except Exception as e:
                             log_msg(f"Return pose error: {e}")

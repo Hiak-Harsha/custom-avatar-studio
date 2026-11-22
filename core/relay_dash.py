@@ -122,12 +122,14 @@ def generate_relay_dash_suite():
     harsha_x, harsha_y = 702, 544
     bot_dock_x, bot_dock_y = harsha_x + harsha_logo.width + SPACING, 544
     
-    morph_center_x = (SCREEN_W - 406) // 2
+    def get_morph_x(progress: float) -> int:
+        """Smoothly moves the text anchor X between hiak (734) and harsha (702)."""
+        return int(hiak_x + progress * (harsha_x - hiak_x))
     
     frames = []
     
     # =========================================================================
-    # FRAME 0: Solid HIAK + Resting Claude Mascot (1800ms)
+    # FRAME 0: Solid HIAK + Resting Claude Mascot (2400ms)
     # =========================================================================
     f0 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
     f0.paste(hiak_logo, (hiak_x, hiak_y), hiak_logo)
@@ -137,11 +139,11 @@ def generate_relay_dash_suite():
     frames.append(f0)
     
     # =========================================================================
-    # FRAME 1: Dissolve Begins -> Claude Dashes Right! (140ms)
+    # FRAME 1: Dissolve Begins -> Claude Dashes Right! (380ms)
     # =========================================================================
     f1 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
-    t1 = generate_morph_text_image("hiak", "harsha", 0.25, scale=SCALE)
-    f1.paste(t1, (morph_center_x, hiak_y), t1)
+    t1 = generate_morph_text_image("hiak", "harsha", 0.25, scale=SCALE, align="left")
+    f1.paste(t1, (get_morph_x(0.25), hiak_y), t1)
     # Claude dashes rightward with determined expression
     dash_x = claude_rest_x + 320 # X: 1350
     add_dash_lines(f1, dash_x, claude_rest_y, TARGET_H)
@@ -150,11 +152,11 @@ def generate_relay_dash_suite():
     frames.append(f1)
     
     # =========================================================================
-    # FRAME 2: Midway Pixel Storm -> Cyber-Bot Enters from Left! (160ms)
+    # FRAME 2: Midway Pixel Storm -> Cyber-Bot Enters from Left! (400ms)
     # =========================================================================
     f2 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
-    t2 = generate_morph_text_image("hiak", "harsha", 0.55, scale=SCALE)
-    f2.paste(t2, (morph_center_x, hiak_y), t2)
+    t2 = generate_morph_text_image("hiak", "harsha", 0.55, scale=SCALE, align="left")
+    f2.paste(t2, (get_morph_x(0.55), hiak_y), t2)
     # Cyber-Bot streaks in from left edge with glowing cyan thrusters!
     bot_in_x = 280
     bot_in_y = 525 # floating slightly higher
@@ -164,11 +166,11 @@ def generate_relay_dash_suite():
     frames.append(f2)
     
     # =========================================================================
-    # FRAME 3: Resolving into HARSHA -> Cyber-Bot Gliding into Dock (180ms)
+    # FRAME 3: Resolving into HARSHA -> Cyber-Bot Gliding into Dock (380ms)
     # =========================================================================
     f3 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
-    t3 = generate_morph_text_image("hiak", "harsha", 0.85, scale=SCALE)
-    f3.paste(t3, (morph_center_x, hiak_y), t3)
+    t3 = generate_morph_text_image("hiak", "harsha", 0.85, scale=SCALE, align="left")
+    f3.paste(t3, (get_morph_x(0.85), hiak_y), t3)
     # Cyber-Bot decelerating toward its docking position
     bot_mid_x = bot_dock_x - 180 # X: ~958
     bot_mid_y = 538
@@ -178,7 +180,7 @@ def generate_relay_dash_suite():
     frames.append(f3)
     
     # =========================================================================
-    # FRAME 4: Solid HARSHA + Cyber-Bot Docked & Happy! (2600ms)
+    # FRAME 4: Solid HARSHA + Cyber-Bot Docked & Happy! (2800ms)
     # =========================================================================
     f4 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
     f4.paste(harsha_logo, (harsha_x, harsha_y), harsha_logo)
@@ -189,11 +191,11 @@ def generate_relay_dash_suite():
     frames.append(f4)
     
     # =========================================================================
-    # FRAME 5: Return Triggered -> Cyber-Bot Boosts Off Left! (160ms)
+    # FRAME 5: Return Triggered -> Cyber-Bot Boosts Off Left! (380ms)
     # =========================================================================
     f5 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
-    t5 = generate_morph_text_image("hiak", "harsha", 0.70, scale=SCALE)
-    f5.paste(t5, (morph_center_x, hiak_y), t5)
+    t5 = generate_morph_text_image("hiak", "harsha", 0.70, scale=SCALE, align="left")
+    f5.paste(t5, (get_morph_x(0.70), hiak_y), t5)
     # Cyber-Bot boosts off to the left!
     boost_x = 340
     boost_y = 530
@@ -203,11 +205,11 @@ def generate_relay_dash_suite():
     frames.append(f5)
     
     # =========================================================================
-    # FRAME 6: Claude Bounds Back In from Right! (180ms)
+    # FRAME 6: Claude Bounds Back In from Right! (400ms)
     # =========================================================================
     f6 = Image.new("RGB", (SCREEN_W, SCREEN_H), BG)
-    t6 = generate_morph_text_image("hiak", "harsha", 0.30, scale=SCALE)
-    f6.paste(t6, (morph_center_x, hiak_y), t6)
+    t6 = generate_morph_text_image("hiak", "harsha", 0.30, scale=SCALE, align="left")
+    f6.paste(t6, (get_morph_x(0.30), hiak_y), t6)
     # Claude bounds back in from the right edge
     land_x = claude_rest_x + 360 # X: 1390
     add_dash_lines(f6, land_x, claude_rest_y, TARGET_H)
