@@ -54,10 +54,29 @@ def apply_desktop_wallpaper(image_path: str, style_mode="Fill") -> bool:
 
     set_wallpaper_style(style_mode)
 
+    # Overwrite TranscodedWallpaper cache if present to force Windows 11 to reload immediately
+    try:
+        import shutil
+        transcoded = Path.home() / "AppData" / "Roaming" / "Microsoft" / "Windows" / "Themes" / "TranscodedWallpaper"
+        if transcoded.parent.exists():
+            shutil.copyfile(target_path, str(transcoded))
+    except Exception:
+        pass
+
     result = ctypes.windll.user32.SystemParametersInfoW(
         SPI_SETDESKWALLPAPER,
         0,
         target_path,
         SPIF_UPDATEINIFILE | SPIF_SENDCHANGE
     )
+
+    # Force immediate desktop redraw
+    try:
+        RDW_INVALIDATE = 0x0001
+        RDW_ALLCHILDREN = 0x0080
+        RDW_UPDATENOW = 0x0100
+        ctypes.windll.user32.RedrawWindow(0, None, None, RDW_INVALIDATE | RDW_ALLCHILDREN | RDW_UPDATENOW)
+    except Exception:
+        pass
+
     return bool(result)
