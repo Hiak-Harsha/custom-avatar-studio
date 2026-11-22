@@ -284,11 +284,11 @@ def listen_for_desktop_clicks():
                 was_hovering = hovering
 
                 # ========================================================
-                # 3. NON-BLOCKING MORPH FRAME SEQUENCING (OPTION A: RELAY DASH - SNAPPY 220-240ms PACING)
+                # 3. NON-BLOCKING MORPH FRAME SEQUENCING (OPTION A: RELAY DASH - BALANCED 300-320ms PACING)
                 # ========================================================
                 if current_state == STATE_MORPH_IN_1:
-                    # Frame 1: Claude dashes off to the right (snappy 0.22s)
-                    if now - state_start_time >= 0.22:
+                    # Frame 1: Claude dashes off to the right (balanced 0.30s)
+                    if now - state_start_time >= 0.30:
                         current_state = STATE_MORPH_IN_2
                         state_start_time = now
                         try:
@@ -299,8 +299,8 @@ def listen_for_desktop_clicks():
                             log_msg(f"Frame 2 error: {e}")
 
                 elif current_state == STATE_MORPH_IN_2:
-                    # Frame 2: Cyber-Bot streaks in from left edge with cyan thrusters (0.24s)
-                    if now - state_start_time >= 0.24:
+                    # Frame 2: Cyber-Bot streaks in from left edge with cyan thrusters (0.32s)
+                    if now - state_start_time >= 0.32:
                         current_state = STATE_MORPH_IN_3
                         state_start_time = now
                         try:
@@ -311,8 +311,8 @@ def listen_for_desktop_clicks():
                             log_msg(f"Frame 3 error: {e}")
 
                 elif current_state == STATE_MORPH_IN_3:
-                    # Frame 3: Cyber-Bot glides into dock next to Harsha (0.22s)
-                    if now - state_start_time >= 0.22:
+                    # Frame 3: Cyber-Bot glides into dock next to Harsha (0.30s)
+                    if now - state_start_time >= 0.30:
                         current_state = STATE_HOLD_HARSHA
                         state_start_time = now
                         try:
@@ -326,8 +326,8 @@ def listen_for_desktop_clicks():
                             log_msg(f"Harsha solid error: {e}")
 
                 elif current_state == STATE_HOLD_HARSHA:
-                    # Hold on HARSHA for 2.6 seconds, then start relay return
-                    if now - state_start_time >= 2.6:
+                    # Hold on HARSHA for 2.7 seconds, then start relay return
+                    if now - state_start_time >= 2.7:
                         current_state = STATE_MORPH_OUT_1
                         state_start_time = now
                         try:
@@ -338,8 +338,8 @@ def listen_for_desktop_clicks():
                             log_msg(f"Frame 5 error: {e}")
 
                 elif current_state == STATE_MORPH_OUT_1:
-                    # Frame 5: Cyber-Bot boosts off to the left (0.22s)
-                    if now - state_start_time >= 0.22:
+                    # Frame 5: Cyber-Bot boosts off to the left (0.30s)
+                    if now - state_start_time >= 0.30:
                         current_state = STATE_MORPH_OUT_2
                         state_start_time = now
                         try:
@@ -350,8 +350,8 @@ def listen_for_desktop_clicks():
                             log_msg(f"Frame 6 error: {e}")
 
                 elif current_state == STATE_MORPH_OUT_2:
-                    # Frame 6: Claude bounds back in from right into resting stance (0.24s)
-                    if now - state_start_time >= 0.24:
+                    # Frame 6: Claude bounds back in from right into resting stance (0.32s)
+                    if now - state_start_time >= 0.32:
                         current_state = STATE_IDLE
                         last_hover_exit_time = now
                         try:
