@@ -331,7 +331,7 @@ def listen_for_desktop_clicks():
                             active_pose = poses_dir / POSE_FILES[idx]
                             if active_pose.exists():
                                 apply_desktop_wallpaper(str(active_pose))
-                                log_msg("Returned to HIAK with Orange Brick Mascot!")
+                                log_msg("Returned to HIAK with Brown Claude Mascot!")
                         except Exception:
                             pass
 
