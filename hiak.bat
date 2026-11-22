@@ -8,8 +8,13 @@ if "%1"=="banner" goto do_banner
 if "%1"=="copy" goto do_copy
 if "%1"=="status" goto do_status
 if "%1"=="create" goto do_create
+if "%1"=="screensaver" goto do_screensaver
 
 python "%STUDIO_DIR%\cli.py" %*
+goto end
+
+:do_screensaver
+python "%STUDIO_DIR%\core\screensaver.py" %2 %3
 goto end
 
 :do_create
