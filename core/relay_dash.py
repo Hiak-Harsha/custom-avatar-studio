@@ -215,11 +215,11 @@ def generate_relay_dash_suite():
     f6.save(str(MORPH_DIR / "9_9_morph_return_mid.png"), quality=95)
     frames.append(f6)
     
-    # Save animated GIF suite with disposal=2
-    durations = [2400, 140, 160, 180, 2600, 160, 180]
+    # Save animated GIF suite with disposal=2 (380-400ms transit for clear cinematic visibility)
+    durations = [2400, 380, 400, 380, 2800, 380, 400]
     disposals = [2] * len(frames)
     
-    for fname in ["hiak_harsha_morph.gif", "hiak_harsha_morph_v2.gif", "hiak_harsha_morph_v3.gif"]:
+    for fname in ["hiak_harsha_morph.gif", "hiak_harsha_morph_v2.gif", "hiak_harsha_morph_v3.gif", "hiak_harsha_morph_v4.gif"]:
         gif_path = WALLPAPERS_DIR / fname
         frames[0].save(
             str(gif_path),

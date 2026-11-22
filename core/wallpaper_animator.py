@@ -219,10 +219,12 @@ def listen_for_desktop_clicks():
             pt = POINT()
 
             STATE_IDLE = "IDLE"
-            STATE_MORPH_IN_1 = "MORPH_IN_1"
-            STATE_MORPH_IN_2 = "MORPH_IN_2"
-            STATE_HOLD_HARSHA = "HOLD_HARSHA"
-            STATE_MORPH_OUT = "MORPH_OUT"
+            STATE_MORPH_IN_1 = "MORPH_IN_1" # Claude dashes right
+            STATE_MORPH_IN_2 = "MORPH_IN_2" # Cyber-Bot enters left with glowing cyan thrusters
+            STATE_MORPH_IN_3 = "MORPH_IN_3" # Cyber-Bot glides into dock next to Harsha
+            STATE_HOLD_HARSHA = "HOLD_HARSHA" # Solid HARSHA + docked Cyber-Bot coding
+            STATE_MORPH_OUT_1 = "MORPH_OUT_1" # Cyber-Bot boosts off to left
+            STATE_MORPH_OUT_2 = "MORPH_OUT_2" # Claude bounds back in from right
 
             current_state = STATE_IDLE
             state_start_time = 0.0
@@ -282,47 +284,74 @@ def listen_for_desktop_clicks():
                 was_hovering = hovering
 
                 # ========================================================
-                # 3. NON-BLOCKING MORPH FRAME SEQUENCING (PURE PIXELS)
+                # 3. NON-BLOCKING MORPH FRAME SEQUENCING (OPTION A: RELAY DASH)
                 # ========================================================
                 if current_state == STATE_MORPH_IN_1:
-                    if now - state_start_time >= 0.04:
+                    # Frame 1: Claude dashes off to the right (hold 0.38s for clear visibility)
+                    if now - state_start_time >= 0.38:
                         current_state = STATE_MORPH_IN_2
                         state_start_time = now
                         try:
                             f2 = MORPH_DIR / "4_4_glitch_midway.png"
                             if f2.exists():
                                 apply_desktop_wallpaper(str(f2))
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            log_msg(f"Frame 2 error: {e}")
 
                 elif current_state == STATE_MORPH_IN_2:
-                    if now - state_start_time >= 0.04:
+                    # Frame 2: Cyber-Bot streaks in from left edge with cyan thrusters (hold 0.40s)
+                    if now - state_start_time >= 0.40:
+                        current_state = STATE_MORPH_IN_3
+                        state_start_time = now
+                        try:
+                            f3 = MORPH_DIR / "5_5_harsha_forming.png"
+                            if f3.exists():
+                                apply_desktop_wallpaper(str(f3))
+                        except Exception as e:
+                            log_msg(f"Frame 3 error: {e}")
+
+                elif current_state == STATE_MORPH_IN_3:
+                    # Frame 3: Cyber-Bot glides into dock next to Harsha (hold 0.38s)
+                    if now - state_start_time >= 0.38:
                         current_state = STATE_HOLD_HARSHA
                         state_start_time = now
                         try:
-                            f3 = MORPH_DIR / "6_6_harsha_cyber_bot_coding.png"
-                            if not f3.exists():
-                                f3 = MORPH_DIR / "6_6_harsha_coding.png"
-                            if f3.exists():
-                                apply_desktop_wallpaper(str(f3))
-                                log_msg("HARSHA active with Option 4 Floating Cyber-Bot!")
-                        except Exception:
-                            pass
-
-                elif current_state == STATE_HOLD_HARSHA:
-                    # Hold on HARSHA for 2.6 seconds, then start return morph
-                    if now - state_start_time >= 2.6:
-                        current_state = STATE_MORPH_OUT
-                        state_start_time = now
-                        try:
-                            f4 = MORPH_DIR / "8_8_morph_return.png"
+                            f4 = MORPH_DIR / "6_6_harsha_cyber_bot_coding.png"
+                            if not f4.exists():
+                                f4 = MORPH_DIR / "6_6_harsha_coding.png"
                             if f4.exists():
                                 apply_desktop_wallpaper(str(f4))
-                        except Exception:
-                            pass
+                                log_msg("HARSHA active with Option 4 Floating Cyber-Bot!")
+                        except Exception as e:
+                            log_msg(f"Harsha solid error: {e}")
 
-                elif current_state == STATE_MORPH_OUT:
-                    if now - state_start_time >= 0.04:
+                elif current_state == STATE_HOLD_HARSHA:
+                    # Hold on HARSHA for 2.8 seconds, then start relay return
+                    if now - state_start_time >= 2.8:
+                        current_state = STATE_MORPH_OUT_1
+                        state_start_time = now
+                        try:
+                            f5 = MORPH_DIR / "8_8_morph_return.png"
+                            if f5.exists():
+                                apply_desktop_wallpaper(str(f5))
+                        except Exception as e:
+                            log_msg(f"Frame 5 error: {e}")
+
+                elif current_state == STATE_MORPH_OUT_1:
+                    # Frame 5: Cyber-Bot boosts off to the left (hold 0.38s)
+                    if now - state_start_time >= 0.38:
+                        current_state = STATE_MORPH_OUT_2
+                        state_start_time = now
+                        try:
+                            f6 = MORPH_DIR / "9_9_morph_return_mid.png"
+                            if f6.exists():
+                                apply_desktop_wallpaper(str(f6))
+                        except Exception as e:
+                            log_msg(f"Frame 6 error: {e}")
+
+                elif current_state == STATE_MORPH_OUT_2:
+                    # Frame 6: Claude bounds back in from right into resting stance (hold 0.40s)
+                    if now - state_start_time >= 0.40:
                         current_state = STATE_IDLE
                         last_hover_exit_time = now
                         try:
@@ -332,8 +361,8 @@ def listen_for_desktop_clicks():
                             if active_pose.exists():
                                 apply_desktop_wallpaper(str(active_pose))
                                 log_msg("Returned to HIAK with Brown Claude Mascot!")
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            log_msg(f"Return pose error: {e}")
 
                 time.sleep(0.015)
 
