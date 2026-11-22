@@ -45,6 +45,18 @@
             "avatar": "assets/avatars/pixel_art.jpg",
             "banner": "assets/banners/hiak.ans",
             "description": "Crisp 16-bit / 32-bit pixel art of a tech creator at a neon cyber battlestation typing at an RGB keyboard."
+        },
+        "harsha": {
+            "id": "harsha",
+            "name": "HARSHA OpenCode Mascot",
+            "description": "Custom OpenCode typography for HARSHA with moving brick mascot companion.",
+            "wallpaper": "assets/wallpapers/poses_harsha/1_neutral.png",
+            "avatar": "assets/whatsapp/harsha_opencode_dp.png",
+            "banner": "assets/banners/harsha.ans",
+            "whatsapp_dp": "assets/whatsapp/harsha_opencode_dp.png",
+            "whatsapp_chat": "assets/whatsapp/harsha_opencode_chat.png",
+            "gif": "assets/wallpapers/harsha_moving_mascot.gif",
+            "poses_dir": "assets/wallpapers/poses_harsha"
         }
     }
 }

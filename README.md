@@ -42,6 +42,15 @@
 Since the studio folder is added to your Windows user `PATH`, you can run `hiak` from **any workspace or folder**:
 
 ```cmd
+# Create an entire studio pack for ANY custom name or friend:
+hiak create HARSHA
+hiak create ALEX
+hiak create DEV
+
+# Switch to that persona across desktop wallpaper & terminal:
+hiak switch harsha
+hiak switch hiak
+
 # Advance the desktop mascot to the next pose
 hiak move
 

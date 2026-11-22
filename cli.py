@@ -279,13 +279,33 @@ def main():
     # customize
     subparsers.add_parser("customize", help="Run interactive persona wizard for any user")
 
+    # create
+    p_create = subparsers.add_parser("create", help="Generate complete OpenCode + Mascot pack for any custom name")
+    p_create.add_argument("name", type=str, help="Custom name (e.g. HARSHA, ALEX, JOHN, DEV)")
+    p_create.add_argument("--user", type=str, default=None, help="Display user name")
+    p_create.add_argument("--role", type=str, default="Creator & Coder", help="Role / tagline")
+
     # gui
     subparsers.add_parser("gui", help="Launch interactive Desktop GUI")
 
     args = parser.parse_args()
     pm = ProfileManager(str(STUDIO_ROOT))
 
-    if args.command == "list":
+    if args.command == "create":
+        from core.generator import generate_persona
+        name = args.name.strip()
+        user_name = args.user or name
+        persona = args.role or "Creator & Coder"
+        print(f"\n✨ Generating OpenCode Mascot Studio pack for: {name}...")
+        res = generate_persona(name, display_user=user_name, persona=persona)
+        print(f"  ✅ 7 Wallpaper Poses generated in: assets/wallpapers/poses_{res['slug']}/")
+        print(f"  ✅ Terminal Animated GIF generated: {res['terminal_gif']}")
+        print(f"  ✅ 24-bit TrueColor ANSI banner: {res['banner']}")
+        print(f"  ✅ WhatsApp DP & Animated Avatar generated: {res['whatsapp_dp']}")
+        print(f"\n🎉 Successfully created profile '{res['slug']}'!")
+        print(f"To apply this persona immediately, run:")
+        print(f"  hiak switch {res['slug']}\n")
+    elif args.command == "list":
         cmd_list(args, pm)
     elif args.command in ["next", "cycle"]:
         cmd_next(args, pm)
