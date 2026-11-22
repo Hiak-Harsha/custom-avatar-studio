@@ -1,5 +1,5 @@
 {
-    "active_style": "harsha",
+    "active_style": "hiak_harsha_morph",
     "styles": {
         "hiak_moving_mascot": {
             "id": "hiak_moving_mascot",
@@ -57,6 +57,17 @@
             "whatsapp_chat": "assets/whatsapp/harsha_opencode_chat.png",
             "gif": "assets/wallpapers/harsha_moving_mascot.gif",
             "poses_dir": "assets/wallpapers/poses_harsha"
+        },
+        "hiak_harsha_morph": {
+            "id": "hiak_harsha_morph",
+            "name": "HIAK \u21c4 HARSHA Pixel Morph",
+            "vibe": "Pixelating Dissolve Transition between HIAK & HARSHA",
+            "wallpaper": "assets/wallpapers/poses_hiak_harsha_morph/1_1_hiak_solid.png",
+            "gif": "assets/wallpapers/hiak_harsha_morph.gif",
+            "avatar": "assets/whatsapp/hiak_harsha_morph_avatar.gif",
+            "banner": "assets/banners/hiak.ans",
+            "poses_dir": "assets/wallpapers/poses_hiak_harsha_morph",
+            "description": "Dynamic combined identity morphing between HIAK and HARSHA with retro pixel glitch dissolve and reactive mascot emotions."
         }
     }
 }
