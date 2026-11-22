@@ -49,6 +49,8 @@ class ProfileManager:
     def set_active_style(self, style_id: str):
         styles_data = self.get_styles()
         aliases = {
+            "hiak": "hiak_moving_mascot",
+            "mascot": "hiak_moving_mascot",
             "pixel": "pixel_art",
             "retro": "pixel_art",
             "cyber": "cyberpunk_anime",

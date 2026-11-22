@@ -1,14 +1,16 @@
 {
-    "active_style": "hiak_harsha_morph",
+    "active_style": "hiak_moving_mascot",
     "styles": {
         "hiak_moving_mascot": {
             "id": "hiak_moving_mascot",
             "name": "HIAK Animated Mascot Lockup",
             "vibe": "Moving Cartoon Mascot next to White & Grey HIAK Logo",
-            "wallpaper": "assets/wallpapers/hiak_moving_mascot.gif",
+            "wallpaper": "assets/wallpapers/poses/1_neutral.png",
             "avatar": "assets/whatsapp/hiak_moving_avatar.gif",
             "banner": "assets/banners/hiak.ans",
-            "description": "Animated mascot companion moving through expressions next to the signature white & grey OpenCode hiak logo."
+            "description": "Animated mascot companion moving through expressions next to the signature white & grey OpenCode hiak logo.",
+            "poses_dir": "assets/wallpapers/poses",
+            "gif": "assets/wallpapers/hiak_moving_mascot.gif"
         },
         "hiak_tech_moving": {
             "id": "hiak_tech_moving",
@@ -26,7 +28,8 @@
             "wallpaper": "assets/wallpapers/hiak_opencode.png",
             "avatar": "assets/whatsapp/hiak_opencode_dp.png",
             "banner": "assets/banners/hiak.ans",
-            "description": "Authentic OpenCode block pixel typography: two-tone gray and white with signature horizontal inset shadow band on deep charcoal."
+            "description": "Authentic OpenCode block pixel typography: two-tone gray and white with signature horizontal inset shadow band on deep charcoal.",
+            "poses_dir": "assets/wallpapers/poses"
         },
         "claude_mascot": {
             "id": "claude_mascot",

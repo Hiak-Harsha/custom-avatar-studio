@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HIAK ⇄ HARSHA // Interactive Pixel Morph</title>
+  <title>HIAK ⇄ HARSHA • OpenCode Interactive Identity</title>
   <style>
     * {
       box-sizing: border-box;
@@ -28,43 +28,61 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
-      padding: 40px;
-      background: rgba(18, 18, 18, 0.6);
-      border: 1px solid #222222;
-      border-radius: 16px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+      gap: 28px;
+      padding: 48px 56px;
+      background: rgba(18, 18, 18, 0.7);
+      border: 1px solid #242424;
+      border-radius: 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
       position: relative;
     }
 
     .header-badge {
       font-size: 11px;
-      letter-spacing: 2px;
+      letter-spacing: 2.5px;
       text-transform: uppercase;
-      color: #666666;
-      background: #141414;
-      padding: 6px 14px;
+      color: #707070;
+      background: #121212;
+      padding: 6px 16px;
       border-radius: 20px;
       border: 1px solid #282828;
     }
 
-    .interactive-stage {
+    .identity-stage {
       display: flex;
       align-items: center;
-      gap: 36px;
-      cursor: pointer;
-      padding: 20px 30px;
-      border-radius: 12px;
-      transition: background 0.3s ease;
+      gap: 40px;
+      padding: 16px 24px;
     }
 
-    .interactive-stage:hover {
+    /* Text Container with clear hover target */
+    .text-wrapper {
+      position: relative;
+      cursor: crosshair;
+      padding: 12px 18px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .text-wrapper:hover {
       background: rgba(255, 255, 255, 0.02);
+      border-color: #262626;
     }
 
     canvas {
+      display: block;
       image-rendering: pixelated;
       image-rendering: crisp-edges;
+    }
+
+    /* Mascot box with explicit click feedback */
+    .mascot-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
     }
 
     .mascot-box {
@@ -74,94 +92,116 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      border-radius: 16px;
+      padding: 6px;
+      transition: background 0.2s;
+    }
+
+    .mascot-box:hover {
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .mascot-img {
-      width: 144px;
-      height: 144px;
+      width: 136px;
+      height: 136px;
       object-fit: contain;
       image-rendering: pixelated;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    .mascot-box:hover .mascot-img {
-      transform: scale(1.08) translateY(-4px);
+    .mascot-box:active .mascot-img {
+      transform: scale(0.92);
     }
 
-    .hint {
+    .pose-badge {
+      font-size: 11px;
+      font-family: monospace;
+      color: #d97706;
+      background: #1c150c;
+      border: 1px solid #45260c;
+      padding: 3px 10px;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+      transition: opacity 0.2s;
+    }
+
+    .instructions-bar {
+      display: flex;
+      gap: 20px;
       font-size: 13px;
-      color: #777777;
+      color: #888888;
+    }
+
+    .inst-item {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .hint kbd {
-      background: #202020;
+    kbd {
+      background: #1c1c1c;
       border: 1px solid #333333;
-      border-radius: 4px;
-      padding: 2px 6px;
+      border-radius: 5px;
+      padding: 3px 8px;
       font-size: 11px;
-      color: #CCCCCC;
-    }
-
-    .state-indicator {
-      display: flex;
-      gap: 12px;
-      font-size: 12px;
+      color: #DDDDDD;
       font-family: monospace;
     }
 
-    .tag-hiak {
-      color: #888888;
-      transition: color 0.3s;
+    .status-pill {
+      font-size: 11px;
+      font-family: monospace;
+      color: #555555;
     }
 
-    .tag-harsha {
-      color: #444444;
-      transition: color 0.3s;
-    }
-
-    .active-tag {
-      color: #EEEEEE !important;
-      font-weight: bold;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    .status-active {
+      color: #4ade80 !important;
     }
   </style>
 </head>
 <body>
 
   <div class="container">
-    <div class="header-badge">OpenCode Identity Matrix • Interactive Hover & Click</div>
+    <div class="header-badge">OpenCode Identity Matrix • Custom Interaction System</div>
 
-    <div class="interactive-stage" id="stage" title="Hover or Click to Pixelate Morph">
-      <!-- Pixel Canvas for Morphing Text -->
-      <canvas id="pixelCanvas" width="540" height="144"></canvas>
+    <div class="identity-stage">
+      <!-- 1. Text Canvas: Hover deliberately over "hiak" to pixelate into "harsha" -->
+      <div class="text-wrapper" id="textTarget" title="Hover deliberately over text to morph into HARSHA for 3 seconds">
+        <canvas id="pixelCanvas" width="540" height="144"></canvas>
+      </div>
 
-      <!-- Reactive Mascot Companion -->
-      <div class="mascot-box">
-        <img id="mascotImg" class="mascot-img" src="../assets/mascots/hiak/neutral.png" alt="Mascot">
+      <!-- 2. Mascot Character: Click to cycle emotion poses -->
+      <div class="mascot-wrapper" id="mascotTarget" title="Click character to cycle emotion poses!">
+        <div class="mascot-box">
+          <img id="mascotImg" class="mascot-img" src="../assets/mascots/hiak/neutral.png" alt="Orange Brick Mascot">
+        </div>
+        <div id="poseBadge" class="pose-badge">Pose: Neutral (1/7)</div>
       </div>
     </div>
 
-    <div class="state-indicator">
-      <span id="tagHiak" class="tag-hiak active-tag">[ HIAK ]</span>
-      <span style="color:#333">⇄</span>
-      <span id="tagHarsha" class="tag-harsha">[ HARSHA ]</span>
+    <div class="instructions-bar">
+      <div class="inst-item">
+        <span>✨ <b>Text:</b> Deliberately hover <kbd>HIAK</kbd> to pixelate into <kbd>HARSHA</kbd> (auto-reverts in 3s)</span>
+      </div>
+      <div class="inst-item">
+        <span>🖱️ <b>Mascot:</b> <kbd>Click Character</kbd> to cycle 7 emotion poses</span>
+      </div>
     </div>
 
-    <div class="hint">
-      <span>💡 Hover cursor over logo or <kbd>Click</kbd> to trigger pixelating dissolve effect</span>
+    <div class="status-pill" id="morphStatus">
+      State: [ HIAK - Default ]
     </div>
   </div>
 
   <script>
+    // Elements
     const canvas = document.getElementById('pixelCanvas');
     const ctx = canvas.getContext('2d');
-    const mascot = document.getElementById('mascotImg');
-    const stage = document.getElementById('stage');
-    const tagHiak = document.getElementById('tagHiak');
-    const tagHarsha = document.getElementById('tagHarsha');
+    const textTarget = document.getElementById('textTarget');
+    const mascotImg = document.getElementById('mascotImg');
+    const mascotTarget = document.getElementById('mascotTarget');
+    const poseBadge = document.getElementById('poseBadge');
+    const morphStatus = document.getElementById('morphStatus');
 
     // OpenCode Exact Palettes
     const BG = "#0A0A0A";
@@ -170,7 +210,7 @@
     const WHITE = "#EEEEEE";
     const WHITE_SHADOW = "#434343";
 
-    // 4x8 Glyph Patterns: 0=none, 1=stroke, 2=shadow
+    // 4x8 Glyph Patterns
     const GLYPHS = {
       'h': [
         [1,0,0,0], [1,0,0,0], [1,1,1,0], [1,0,0,1],
@@ -228,7 +268,7 @@
       for (let r = 0; r < rows; r++) {
         const row = [];
         for (let i = 0; i < chars.length; i++) {
-          if (i > 0) row.push(null); // 1-cell letter spacing
+          if (i > 0) row.push(null);
           row.push(...chars[i][r]);
         }
         grid.push(row);
@@ -241,28 +281,28 @@
 
     const SCALE = 18;
     const MAX_COLS = 30;
-    const TOTAL_WIDTH = MAX_COLS * SCALE;
-    canvas.width = TOTAL_WIDTH;
+    canvas.width = MAX_COLS * SCALE;
     canvas.height = 8 * SCALE;
 
-    let progress = 0.0; // 0.0 = hiak, 1.0 = harsha
+    let progress = 0.0;       // 0.0 = HIAK, 1.0 = HARSHA
     let targetProgress = 0.0;
-    let isLocked = false;
+    let revertTimeout = null;
+    let isHovered = false;
 
-    // Particles for dissolving effect
+    // Dissolve Particle Dust
     let particles = [];
 
-    function spawnGlitchParticles() {
-      for (let i = 0; i < 25; i++) {
+    function spawnGlitchParticles(amount = 20) {
+      for (let i = 0; i < amount; i++) {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          vx: (Math.random() - 0.5) * 6,
-          vy: (Math.random() - 0.5) * 6,
-          size: SCALE * (Math.random() > 0.5 ? 1 : 0.5),
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5,
+          size: SCALE * (Math.random() > 0.4 ? 1 : 0.5),
           color: Math.random() > 0.5 ? WHITE : GRAY,
           alpha: 1.0,
-          decay: 0.04 + Math.random() * 0.05
+          decay: 0.035 + Math.random() * 0.04
         });
       }
     }
@@ -272,11 +312,9 @@
 
       const cols1 = gridHiak[0].length;
       const cols2 = gridHarsha[0].length;
-
       const pad1 = Math.floor((MAX_COLS - cols1) / 2);
       const pad2 = Math.floor((MAX_COLS - cols2) / 2);
 
-      // Draw Base Pixel Matrix
       for (let r = 0; r < 8; r++) {
         for (let c = 0; c < MAX_COLS; c++) {
           const c1 = c - pad1;
@@ -292,15 +330,14 @@
           } else if (currentProg >= 0.98) {
             drawColor = color2;
           } else {
-            // Pixel dissolve threshold
             const rand = Math.random();
             if (rand < currentProg) {
               if (color2 && Math.random() < 0.85) drawColor = color2;
-              else if (color1 && Math.random() < 0.2) drawColor = color1;
+              else if (color1 && Math.random() < 0.15) drawColor = color1;
               else if (Math.random() < 0.06) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
             } else {
               if (color1 && Math.random() < 0.85) drawColor = color1;
-              else if (color2 && Math.random() < 0.2) drawColor = color2;
+              else if (color2 && Math.random() < 0.15) drawColor = color2;
               else if (Math.random() < 0.06) drawColor = (Math.random() > 0.5 ? WHITE : GRAY);
             }
           }
@@ -312,7 +349,7 @@
         }
       }
 
-      // Draw and update active particles
+      // Draw active floating pixel particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.x += p.vx;
@@ -331,31 +368,25 @@
       }
     }
 
-    // Animation Loop
     function animate() {
       const diff = targetProgress - progress;
       if (Math.abs(diff) > 0.005) {
-        progress += diff * 0.12;
-        if (Math.random() < 0.4) spawnGlitchParticles();
+        progress += diff * 0.14;
+        if (Math.random() < 0.4) spawnGlitchParticles(4);
       } else {
         progress = targetProgress;
       }
 
       render(progress);
 
-      // Update mascot emotion dynamically based on transition stage
-      if (progress < 0.25) {
-        mascot.src = "../assets/mascots/hiak/neutral.png";
-        tagHiak.classList.add("active-tag");
-        tagHarsha.classList.remove("active-tag");
-      } else if (progress < 0.5) {
-        mascot.src = "../assets/mascots/hiak/thinking.png";
-      } else if (progress < 0.75) {
-        mascot.src = "../assets/mascots/hiak/idea.png";
+      if (progress > 0.8) {
+        morphStatus.textContent = "State: [ HARSHA - Temporary Reveal ]";
+        morphStatus.classList.add("status-active");
+      } else if (progress < 0.2) {
+        morphStatus.textContent = "State: [ HIAK - Default ]";
+        morphStatus.classList.remove("status-active");
       } else {
-        mascot.src = "../assets/mascots/hiak/coding.png";
-        tagHarsha.classList.add("active-tag");
-        tagHiak.classList.remove("active-tag");
+        morphStatus.textContent = "State: [ Pixelating Dissolve Transition... ]";
       }
 
       requestAnimationFrame(animate);
@@ -363,25 +394,56 @@
 
     animate();
 
-    // Interaction Events
-    stage.addEventListener('mouseenter', () => {
-      if (!isLocked) {
-        targetProgress = 1.0;
-        spawnGlitchParticles();
-      }
-    });
+    // ========================================================
+    // 1. DELIBERATE HOVER ON TEXT TARGET
+    // ========================================================
+    // When user hovers on HIAK: pixelates to HARSHA, stays 3s, then auto-reverts
+    textTarget.addEventListener('mouseenter', () => {
+      isHovered = true;
+      targetProgress = 1.0;
+      spawnGlitchParticles(20);
 
-    stage.addEventListener('mouseleave', () => {
-      if (!isLocked) {
+      if (revertTimeout) clearTimeout(revertTimeout);
+
+      // Hold on HARSHA for 3 seconds, then return to HIAK
+      revertTimeout = setTimeout(() => {
         targetProgress = 0.0;
-        spawnGlitchParticles();
-      }
+        spawnGlitchParticles(20);
+      }, 3000);
     });
 
-    stage.addEventListener('click', () => {
-      isLocked = !isLocked;
-      targetProgress = (targetProgress === 0.0) ? 1.0 : 0.0;
-      spawnGlitchParticles();
+    textTarget.addEventListener('mouseleave', () => {
+      isHovered = false;
+      // If mouse leaves early, let the 3s timer or user exit cleanly revert it
+    });
+
+    // ========================================================
+    // 2. MASCOT CARTOON CLICKING (CYCLES 7 EMOTION POSES)
+    // ========================================================
+    const POSES = [
+      { file: "neutral.png", label: "Pose: Neutral (1/7)" },
+      { file: "happy.png", label: "Pose: Happy 😄 (2/7)" },
+      { file: "excited.png", label: "Pose: Wave 👋 (3/7)" },
+      { file: "idea.png", label: "Pose: Idea 💡 (4/7)" },
+      { file: "cool.png", label: "Pose: Cool 😎 (5/7)" },
+      { file: "coding.png", label: "Pose: Coding 💻 (6/7)" },
+      { file: "sleepy.png", label: "Pose: Sleepy 😴 (7/7)" },
+    ];
+
+    let currentPoseIdx = 0;
+
+    mascotTarget.addEventListener('click', () => {
+      currentPoseIdx = (currentPoseIdx + 1) % POSES.length;
+      const pose = POSES[currentPoseIdx];
+
+      // Bounce mascot animation
+      mascotImg.style.transform = "scale(1.22) rotate(4deg)";
+      setTimeout(() => {
+        mascotImg.src = `../assets/mascots/hiak/${pose.file}`;
+        mascotImg.style.transform = "scale(1.0) rotate(0deg)";
+      }, 90);
+
+      poseBadge.textContent = pose.label;
     });
   </script>
 </body>
