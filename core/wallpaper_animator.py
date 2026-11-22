@@ -137,16 +137,14 @@ def play_desktop_pixel_morph(duration: float = 3.0):
 
 def is_over_text(pt_x: int, pt_y: int, screen_w: int, screen_h: int) -> bool:
     """
-    Checks if cursor is over the 'hiak' text area on the desktop wallpaper.
-    Accounts for 1920x1080 aspect ratio filling 1920x1200 or 1920x1080 screens.
+    Checks if cursor is over the 'hiak' text area on the 1920x1200 medium centered wallpaper.
     """
     scale_x = screen_w / 1920.0
-    scale_y = screen_h / 1080.0
-    # Generous text hitbox: roughly center-right of the lockup
-    min_x = int(720 * scale_x)
-    max_x = int(1420 * scale_x)
-    min_y = int(460 * scale_y)
-    max_y = int(760 * scale_y)
+    scale_y = screen_h / 1200.0
+    min_x = int(660 * scale_x)
+    max_x = int(1150 * scale_x)
+    min_y = int(500 * scale_y)
+    max_y = int(700 * scale_y)
     return (min_x <= pt_x <= max_x) and (min_y <= pt_y <= max_y)
 
 
