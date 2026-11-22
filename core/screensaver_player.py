@@ -38,15 +38,15 @@ class ScreensaverApp:
         )
         self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        # Frame sequence & timings (ms) - Option A: Relay Dash Transit (paced for clear visibility)
+        # Frame sequence & timings (ms) - Option A: Relay Dash Transit (snappy 220-240ms transit)
         self.frame_specs = [
             ("1_1_hiak_solid.png", 2400),
-            ("3_3_dissolve_start.png", 380),           # Claude dashes right!
-            ("4_4_glitch_midway.png", 400),            # Cyber-Bot enters left with cyan thrusters!
-            ("5_5_harsha_forming.png", 380),           # Cyber-Bot glides into dock!
-            ("6_6_harsha_cyber_bot_coding.png", 2800), # Solid HARSHA + docked Cyber-Bot
-            ("8_8_morph_return.png", 380),            # Cyber-Bot boosts off left!
-            ("9_9_morph_return_mid.png", 400),         # Claude bounds back in from right!
+            ("3_3_dissolve_start.png", 220),           # Claude dashes right!
+            ("4_4_glitch_midway.png", 240),            # Cyber-Bot enters left with cyan thrusters!
+            ("5_5_harsha_forming.png", 220),           # Cyber-Bot glides into dock!
+            ("6_6_harsha_cyber_bot_coding.png", 2600), # Solid HARSHA + docked Cyber-Bot
+            ("8_8_morph_return.png", 220),            # Cyber-Bot boosts off left!
+            ("9_9_morph_return_mid.png", 240),         # Claude bounds back in from right!
         ]
         
         self.cached_images = []
