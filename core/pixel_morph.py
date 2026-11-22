@@ -2,6 +2,12 @@
 Pixel Morph & Dissolve Engine
 Generates smooth retro pixel-dissolve / glitch transition frames between two names
 (e.g., 'hiak' <-> 'harsha') paired with reactive mascot emotion states.
+
+STRICT MASCOT DISPLAY RULE:
+- BEFORE hover: Shows HIAK with designated Orange Brick Mascot
+- WHILE PIXELATING / ANIMATING: Shows ONLY the glitching/dissolving PIXELS! NO CARTOON MASCOT AT ALL!
+- AFTER hover: Shows HARSHA with designated Option 4 Floating Cyber-Bot
+- WHILE RETURNING: Shows ONLY the glitching/dissolving PIXELS! NO CARTOON MASCOT AT ALL!
 """
 import random
 import sys
@@ -15,26 +21,34 @@ sys.path.insert(0, str(STUDIO_ROOT))
 from core.opencode_font import render_opencode_image, build_text_grid, BG, GRAY, GRAY_SHADOW, WHITE, WHITE_SHADOW
 
 MASCOTS_DIR = STUDIO_ROOT / "assets" / "mascots" / "hiak"
+BOT_DIR = STUDIO_ROOT / "assets" / "mascots" / "cyber_bot"
 WALLPAPERS_DIR = STUDIO_ROOT / "assets" / "wallpapers"
 WHATSAPP_DIR = STUDIO_ROOT / "assets" / "whatsapp"
 
 
-def composite_frame(text_img: Image.Image, mascot_img: Image.Image, canvas_size=(1920, 1080), spacing=40) -> Image.Image:
+def composite_frame(text_img: Image.Image, mascot_img: Image.Image = None, canvas_size=(1920, 1080), spacing=40) -> Image.Image:
     canvas = Image.new("RGB", canvas_size, BG)
     target_h = 144
     
-    # Scale mascot to match 144px height
-    m_ratio = target_h / mascot_img.height
-    target_w = int(mascot_img.width * m_ratio)
-    scaled_mascot = mascot_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
-    
-    # Text image is scaled to 144px height (scale=18 * 8 rows = 144)
-    total_w = text_img.width + spacing + target_w
-    start_x = (canvas_size[0] - total_w) // 2
-    start_y = (canvas_size[1] - target_h) // 2
+    if mascot_img is not None:
+        # Scale mascot to match 144px height
+        m_ratio = target_h / mascot_img.height
+        target_w = int(mascot_img.width * m_ratio)
+        scaled_mascot = mascot_img.resize((target_w, target_h), Image.Resampling.LANCZOS)
+        
+        # Text image is scaled to 144px height (scale=18 * 8 rows = 144)
+        total_w = text_img.width + spacing + target_w
+        start_x = (canvas_size[0] - total_w) // 2
+        start_y = (canvas_size[1] - target_h) // 2
 
-    canvas.paste(text_img, (start_x, start_y), text_img)
-    canvas.paste(scaled_mascot, (start_x + text_img.width + spacing, start_y), scaled_mascot)
+        canvas.paste(text_img, (start_x, start_y), text_img)
+        canvas.paste(scaled_mascot, (start_x + text_img.width + spacing, start_y), scaled_mascot)
+    else:
+        # PURE PIXELS ONLY during animation - NO CARTOON MASCOT!
+        start_x = (canvas_size[0] - text_img.width) // 2
+        start_y = (canvas_size[1] - target_h) // 2
+        canvas.paste(text_img, (start_x, start_y), text_img)
+        
     return canvas
 
 
@@ -97,7 +111,7 @@ def generate_morph_text_image(text1: str, text2: str, progress: float, scale: in
                         chosen_color = color2
                     elif is_active1 and random.random() < 0.2:
                         chosen_color = color1
-                    elif random.random() < 0.08: # occasional glitch particle
+                    elif random.random() < 0.12: # glitch particle
                         chosen_color = random.choice([GRAY, WHITE, GRAY_SHADOW, WHITE_SHADOW])
                 else:
                     # Tending toward text1
@@ -105,7 +119,7 @@ def generate_morph_text_image(text1: str, text2: str, progress: float, scale: in
                         chosen_color = color1
                     elif is_active2 and random.random() < 0.2:
                         chosen_color = color2
-                    elif random.random() < 0.08:
+                    elif random.random() < 0.12: # glitch particle
                         chosen_color = random.choice([GRAY, WHITE, GRAY_SHADOW, WHITE_SHADOW])
             
             if chosen_color:
@@ -127,35 +141,36 @@ def build_hiak_harsha_morph_pack():
     """
     out_dir = WALLPAPERS_DIR / "poses_hiak_harsha_morph"
     out_dir.mkdir(parents=True, exist_ok=True)
-    
-    bot_dir = STUDIO_ROOT / "assets" / "mascots" / "cyber_bot"
 
-    # Sequence of transitions with mascot emotion pairs
-    # text1 (HIAK + Brick) -> morph glitch -> text2 (HARSHA + Option 4 Cyber-Bot) -> return
+    # Sequence:
+    # 1. BEFORE hover: Pure HIAK + Designated Orange Brick Mascot
+    # 2. WHILE PIXELATING: PURE PIXELS ONLY! No mascot!
+    # 3. AFTER hover: Pure HARSHA + Designated Option 4 Cyber-Bot!
+    # 4. WHILE RETURNING: PURE PIXELS ONLY! No mascot!
     stages = [
         # 1. Solid HIAK (Neutral Orange Brick)
         (0.0, MASCOTS_DIR / "neutral.png", "1_hiak_solid"),
         # 2. HIAK with sunglasses (Cool Orange Brick)
         (0.0, MASCOTS_DIR / "cool.png", "2_hiak_cool"),
-        # 3. Dissolve starts (Mascot thinking)
-        (0.3, MASCOTS_DIR / "thinking.png", "3_dissolve_start"),
-        # 4. Heavy glitch / particle morph
-        (0.65, MASCOTS_DIR / "excited.png", "4_glitch_midway"),
-        # 5. HARSHA emerges with Option 4 Cyber-Bot!
-        (0.9, bot_dir / "coding.png", "5_harsha_forming"),
-        # 6. Solid HARSHA + Cyber-Bot Data Stream!
-        (1.0, bot_dir / "coding.png", "6_harsha_cyber_bot_coding"),
-        # 7. Solid HARSHA + Cyber-Bot Happy ^_^ !
-        (1.0, bot_dir / "happy.png", "7_harsha_cyber_bot_happy"),
-        # 8. Dissolve back to HIAK
-        (0.5, MASCOTS_DIR / "starstruck.png", "8_morph_return"),
+        # 3. Dissolve starts: PURE PIXELS ONLY! No mascot!
+        (0.3, None, "3_dissolve_start"),
+        # 4. Heavy glitch / particle morph: PURE PIXELS ONLY! No mascot!
+        (0.65, None, "4_glitch_midway"),
+        # 5. HARSHA forming: PURE PIXELS ONLY! No mascot!
+        (0.85, None, "5_harsha_forming"),
+        # 6. Solid HARSHA + Option 4 Cyber-Bot Data Stream!
+        (1.0, BOT_DIR / "coding.png", "6_harsha_cyber_bot_coding"),
+        # 7. Solid HARSHA + Option 4 Cyber-Bot Happy ^_^ !
+        (1.0, BOT_DIR / "happy.png", "7_harsha_cyber_bot_happy"),
+        # 8. Dissolve back to HIAK: PURE PIXELS ONLY! No mascot!
+        (0.45, None, "8_morph_return"),
     ]
     
     frames_1080p = []
     frames_wa = []
     
     for idx, (prog, m_path, name) in enumerate(stages):
-        m_img = Image.open(str(m_path)).convert("RGBA")
+        m_img = Image.open(str(m_path)).convert("RGBA") if m_path else None
         
         # Render morphed text
         text_img = generate_morph_text_image("hiak", "harsha", prog, scale=18)
@@ -176,7 +191,7 @@ def build_hiak_harsha_morph_pack():
         str(gif_1080p),
         save_all=True,
         append_images=frames_1080p[1:],
-        duration=[1200, 1000, 250, 300, 350, 1200, 1000, 350],
+        duration=[1500, 1000, 160, 180, 200, 2200, 1200, 220],
         loop=0,
         optimize=True
     )
@@ -186,7 +201,7 @@ def build_hiak_harsha_morph_pack():
         str(wa_gif),
         save_all=True,
         append_images=frames_wa[1:],
-        duration=[1200, 1000, 250, 300, 350, 1200, 1000, 350],
+        duration=[1500, 1000, 160, 180, 200, 2200, 1200, 220],
         loop=0,
         optimize=True
     )
