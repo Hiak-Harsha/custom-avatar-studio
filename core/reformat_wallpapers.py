@@ -3,6 +3,11 @@ Reformat Wallpaper Suite for Medium Scale & Exact 1920x1200 Center Alignment
 DESIGNATED MASCOTS:
 - HIAK: Designated Brown Claude Mascot (assets/mascots/claude/)
 - HARSHA: Designated Option 4 Floating Cyber-Bot (assets/mascots/cyber_bot/)
+
+EQUAL SIZING:
+- Auto-crops transparent borders from both mascots so they have identical visual height (112px).
+- Claude and Cyber-Bot are both matched to the exact height of the OpenCode logo!
+
 STRICT DISPLAY RULE:
 - BEFORE hover / default state: Shows HIAK with designated Brown Claude Mascot
 - WHILE ANIMATING / PIXELATING: Shows ONLY the glitching/dissolving PIXELS! NO CARTOON MASCOT AT ALL!
@@ -74,10 +79,17 @@ def composite_centered(text_img: Image.Image, mascot_img: Image.Image = None, ca
     canvas = Image.new("RGB", (canvas_w, canvas_h), BG)
     
     if mascot_img is not None:
-        # Scale mascot to match TARGET_H (112px)
-        m_ratio = TARGET_H / mascot_img.height
-        target_w = int(mascot_img.width * m_ratio)
-        scaled_mascot = mascot_img.resize((target_w, TARGET_H), Image.Resampling.LANCZOS)
+        # Auto-crop content bounding box to eliminate empty border padding
+        bbox = mascot_img.getbbox()
+        if bbox:
+            cropped = mascot_img.crop(bbox)
+        else:
+            cropped = mascot_img
+            
+        # Scale cropped mascot so its actual height is TARGET_H (112px) - matching text height & Cyber-Bot!
+        m_ratio = TARGET_H / cropped.height
+        target_w = int(cropped.width * m_ratio)
+        scaled_mascot = cropped.resize((target_w, TARGET_H), Image.Resampling.LANCZOS)
         
         # Calculate center bounding box for text + mascot
         total_w = text_img.width + SPACING + target_w
@@ -96,12 +108,12 @@ def composite_centered(text_img: Image.Image, mascot_img: Image.Image = None, ca
 
 
 def reformat_all():
-    print("📐 Reformatting wallpapers with Brown Claude Mascot for HIAK & Option 4 Cyber-Bot for HARSHA...")
+    print("📐 Reformatting wallpapers with EQUAL-SIZED Brown Claude Mascot & Option 4 Cyber-Bot...")
     
     # 1. Base HIAK logo at scale 14
     hiak_logo = render_opencode_image("hiak", scale=SCALE, bg_color=None)
     
-    # 2. Re-render 7 HIAK poses in assets/wallpapers/poses with the Brown Claude Mascot!
+    # 2. Re-render 7 HIAK poses with the full-sized Brown Claude Mascot!
     POSES_DIR.mkdir(parents=True, exist_ok=True)
     pose_files = [
         ("1_neutral.png", "neutral.png"),
@@ -116,19 +128,16 @@ def reformat_all():
         m_img = make_claude_transparent(CLAUDE_DIR / m_file)
         wp = composite_centered(hiak_logo, m_img)
         wp.save(str(POSES_DIR / out_name), quality=95)
-    print("  ✅ 7 HIAK desktop poses updated with Brown Claude Mascot (1920x1200 medium centered)")
+    print("  ✅ 7 HIAK desktop poses updated (Brown Claude mascot scaled to equal height 112px)")
 
     # 3. Morph Sequence:
-    # HIAK: Brown Claude Mascot (neutral.png)
-    # HARSHA: Option 4 Cyber-Bot (happy.png)
-    # Intermediate frames: PURE PIXELS ONLY! No mascot!
     MORPH_DIR.mkdir(parents=True, exist_ok=True)
     
     claude_img = make_claude_transparent(CLAUDE_DIR / "neutral.png")
     cyber_bot_img = Image.open(str(BOT_DIR / "happy.png")).convert("RGBA")
 
     stages = [
-        # Frame 0: BEFORE hover -> Pure HIAK + Designated Brown Claude Mascot
+        # Frame 0: BEFORE hover -> Pure HIAK + Full-sized Brown Claude Mascot
         (0.0, claude_img, "1_1_hiak_solid.png"),
         # Frame 1: WHILE ANIMATING -> PURE PIXELS ONLY! NO MASCOT!
         (0.25, None, "3_3_dissolve_start.png"),
@@ -136,7 +145,7 @@ def reformat_all():
         (0.55, None, "4_4_glitch_midway.png"),
         # Frame 3: RESOLVING INTO HARSHA -> PURE PIXELS ONLY! NO MASCOT!
         (0.85, None, "5_5_harsha_forming.png"),
-        # Frame 4: AFTER hover -> Pure HARSHA + Designated Option 4 Cyber-Bot!
+        # Frame 4: AFTER hover -> Pure HARSHA + Full-sized Option 4 Cyber-Bot!
         (1.0, cyber_bot_img, "6_6_harsha_cyber_bot_coding.png"),
         # Frame 5: WHILE RETURNING -> PURE PIXELS ONLY! NO MASCOT!
         (0.65, None, "8_8_morph_return.png"),
@@ -156,11 +165,11 @@ def reformat_all():
     frames_1200p[0].save(str(MORPH_DIR / "2_2_hiak_cool.png"))
     frames_1200p[4].save(str(MORPH_DIR / "7_7_harsha_cyber_bot_happy.png"))
 
-    # Save animated morph GIFs (both hiak_harsha_morph.gif and v2) with explicit disposal=2
+    # Save animated morph GIFs (hiak_harsha_morph.gif, v2, v3) with disposal=2
     durations = [2400, 140, 160, 180, 2800, 160, 180]
     disposals = [2] * len(frames_1200p)
     
-    for fname in ["hiak_harsha_morph.gif", "hiak_harsha_morph_v2.gif"]:
+    for fname in ["hiak_harsha_morph.gif", "hiak_harsha_morph_v2.gif", "hiak_harsha_morph_v3.gif"]:
         gif_path = WALLPAPERS_DIR / fname
         frames_1200p[0].save(
             str(gif_path),
@@ -171,7 +180,7 @@ def reformat_all():
             loop=0,
             optimize=False
         )
-    print("  ✅ Morph sequence & animated GIFs updated with Brown Claude mascot & pure pixels!")
+    print("  ✅ All GIF versions generated with disposal=2 and equal character sizes!")
 
 
 if __name__ == "__main__":

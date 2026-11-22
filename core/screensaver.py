@@ -1,8 +1,8 @@
 """
 Windows Screen Saver Manager
 Provides full integration for Windows screensaver:
-1. Native Fullscreen Animated Player (Tkinter 60fps)
-2. Windows System Screensaver Configuration (Control Panel & Registry)
+1. Native Fullscreen Animated Player (Tkinter 60fps) - instant preview
+2. Windows System Screensaver Configuration & Instant Test Mode
 """
 import os
 import subprocess
@@ -15,9 +15,19 @@ sys.path.insert(0, str(STUDIO_ROOT))
 
 
 def launch_screensaver_player():
-    """Launches the dedicated fullscreen Python screensaver player."""
+    """Launches the dedicated fullscreen Python screensaver player instantly."""
     player_script = STUDIO_ROOT / "core" / "screensaver_player.py"
     subprocess.Popen([sys.executable, str(player_script)])
+
+
+def test_windows_screensaver():
+    """Triggers the Windows system screensaver in fullscreen test mode instantly."""
+    system32 = Path(os.environ.get("WINDIR", "C:/Windows")) / "System32"
+    photo_scr = system32 / "PhotoScreensaver.scr"
+    if photo_scr.exists():
+        subprocess.Popen([str(photo_scr), "/s"])
+    else:
+        launch_screensaver_player()
 
 
 def open_screensaver_settings():
@@ -50,12 +60,17 @@ def configure_windows_screensaver(timeout_minutes: int = 5):
     except Exception as e:
         print(f"⚠️ Screensaver registry note: {e}")
 
-    # Also open settings so user can see it verified
     open_screensaver_settings()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1].lower() in ["settings", "setup"]:
-        configure_windows_screensaver()
+    if len(sys.argv) > 1:
+        arg = sys.argv[1].lower()
+        if arg in ["settings", "setup"]:
+            configure_windows_screensaver()
+        elif arg in ["win", "windows", "system"]:
+            test_windows_screensaver()
+        else:
+            launch_screensaver_player()
     else:
         launch_screensaver_player()
