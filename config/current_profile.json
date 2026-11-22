@@ -1,0 +1,24 @@
+{
+    "user_name": "Madhav",
+    "active_style": "hiak_moving_mascot",
+    "terminal": {
+        "opacity": 0.6,
+        "alignment": "bottomRight",
+        "stretch": "uniformToFill",
+        "apply_to_all_profiles": true
+    },
+    "desktop": {
+        "enabled": true
+    },
+    "banner": {
+        "show_on_powershell_startup": true,
+        "banner_width": 54
+    },
+    "profiles_list": [
+        {
+            "name": "Madhav",
+            "persona": "Tech Creator & Coder",
+            "favorite_style": "pixel_art"
+        }
+    ]
+}

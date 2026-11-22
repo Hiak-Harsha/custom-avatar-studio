@@ -1,0 +1,50 @@
+{
+    "active_style": "hiak_moving_mascot",
+    "styles": {
+        "hiak_moving_mascot": {
+            "id": "hiak_moving_mascot",
+            "name": "HIAK Animated Mascot Lockup",
+            "vibe": "Moving Cartoon Mascot next to White & Grey HIAK Logo",
+            "wallpaper": "assets/wallpapers/hiak_moving_mascot.gif",
+            "avatar": "assets/whatsapp/hiak_moving_avatar.gif",
+            "banner": "assets/banners/hiak.ans",
+            "description": "Animated mascot companion moving through expressions next to the signature white & grey OpenCode hiak logo."
+        },
+        "hiak_tech_moving": {
+            "id": "hiak_tech_moving",
+            "name": "HIAK Tech Companion (Moving)",
+            "vibe": "Original Cyan-Headphone Tech Mascot Animated",
+            "wallpaper": "assets/wallpapers/hiak_tech_mascot_moving.gif",
+            "avatar": "assets/whatsapp/hiak_moving_avatar.gif",
+            "banner": "assets/banners/hiak.ans",
+            "description": "Original HIAK cyber mascot wearing glowing cyan headphones, animated and typing next to the white & grey logo."
+        },
+        "hiak_opencode": {
+            "id": "hiak_opencode",
+            "name": "HIAK OpenCode Minimalist",
+            "vibe": "Exact OpenCode Block Typography & Inset Shadow",
+            "wallpaper": "assets/wallpapers/hiak_opencode.png",
+            "avatar": "assets/whatsapp/hiak_opencode_dp.png",
+            "banner": "assets/banners/hiak.ans",
+            "description": "Authentic OpenCode block pixel typography: two-tone gray and white with signature horizontal inset shadow band on deep charcoal."
+        },
+        "claude_mascot": {
+            "id": "claude_mascot",
+            "name": "Claude Brick Mascot Sheet",
+            "vibe": "Classic Terracotta Brick Creature with 31 Emotions",
+            "wallpaper": "assets/wallpapers/claude_mascot_sheet.jpg",
+            "avatar": "assets/mascots/claude/cool.png",
+            "banner": "assets/banners/hiak.ans",
+            "description": "The classic Claude terracotta brick mascot character model sheet with 31 emotional expressions."
+        },
+        "pixel_art": {
+            "id": "pixel_art",
+            "name": "Retro Pixel Battlestation",
+            "vibe": "Nostalgic, Cyberpunk, 16-bit Battlestation",
+            "wallpaper": "assets/wallpapers/pixel_art.jpg",
+            "avatar": "assets/avatars/pixel_art.jpg",
+            "banner": "assets/banners/hiak.ans",
+            "description": "Crisp 16-bit / 32-bit pixel art of a tech creator at a neon cyber battlestation typing at an RGB keyboard."
+        }
+    }
+}
