@@ -20,7 +20,8 @@ class ProfileManager:
                 "user_name": "Madhav",
                 "active_style": "pixel_art",
                 "terminal": {"opacity": 0.35, "alignment": "bottomRight", "stretch": "uniformToFill"},
-                "desktop": {"enabled": True}
+                "desktop": {"enabled": True},
+                "lock_screen": {"enabled": True}
             }
         with open(self.profile_file, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -105,4 +106,15 @@ class ProfileManager:
         if not matched:
             users.append({"name": name, "favorite_style": favorite_style, "persona": persona})
         profile["profiles_list"] = users
+        self.save_profile(profile)
+
+    def is_lock_screen_enabled(self) -> bool:
+        profile = self.get_profile()
+        return bool(profile.get("lock_screen", {}).get("enabled", True))
+
+    def set_lock_screen_enabled(self, enabled: bool):
+        profile = self.get_profile()
+        lock_cfg = profile.get("lock_screen", {})
+        lock_cfg["enabled"] = bool(enabled)
+        profile["lock_screen"] = lock_cfg
         self.save_profile(profile)

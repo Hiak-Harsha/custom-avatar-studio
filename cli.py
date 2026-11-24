@@ -12,15 +12,21 @@ STUDIO_ROOT = Path(__file__).parent.resolve()
 sys.path.insert(0, str(STUDIO_ROOT))
 
 from core.profile import ProfileManager
-from core.wallpaper import apply_desktop_wallpaper
+from core.wallpaper import apply_desktop_wallpaper, apply_lock_screen_wallpaper, get_lock_screen_wallpaper
 from core.terminal import apply_terminal_background, remove_terminal_background
 from core.banner import install_powershell_banner, remove_powershell_banner
-from core.screensaver import open_screensaver_settings, test_screensaver
+from core.screensaver import open_screensaver_settings, launch_screensaver_player
 from core.export import export_html_card
 from core.whatsapp import copy_image_to_clipboard, create_whatsapp_dp, create_whatsapp_chat_wallpaper
 
 
-def apply_active_style(pm: ProfileManager, silent: bool = False, terminal_only: bool = False, desktop_only: bool = False):
+def apply_active_style(
+    pm: ProfileManager,
+    silent: bool = False,
+    terminal_only: bool = False,
+    desktop_only: bool = False,
+    lock_screen_only: bool = False
+):
     style = pm.get_active_style()
     profile = pm.get_profile()
     user_name = profile.get("user_name", "Madhav")
@@ -30,7 +36,7 @@ def apply_active_style(pm: ProfileManager, silent: bool = False, terminal_only: 
     wall_path = STUDIO_ROOT / style["wallpaper"]
     banner_path = STUDIO_ROOT / style["banner"]
 
-    apply_all = not (terminal_only or desktop_only)
+    apply_all = not (terminal_only or desktop_only or lock_screen_only)
 
     if apply_all or terminal_only:
         try:
@@ -53,6 +59,15 @@ def apply_active_style(pm: ProfileManager, silent: bool = False, terminal_only: 
         except Exception as e:
             if not silent:
                 print(f"  ⚠️ Desktop Wallpaper update note: {e}")
+
+    if lock_screen_only or (apply_all and pm.is_lock_screen_enabled()):
+        try:
+            apply_lock_screen_wallpaper(str(wall_path))
+            if not silent:
+                print(f"  ✅ Windows Lock Screen wallpaper updated! ({style_name})")
+        except Exception as e:
+            if not silent:
+                print(f"  ⚠️ Lock Screen update note: {e}")
 
     if apply_all and profile.get("banner", {}).get("show_on_powershell_startup", True):
         try:
@@ -98,7 +113,8 @@ def cmd_switch(args, pm: ProfileManager):
             pm,
             silent=getattr(args, "silent", False),
             terminal_only=getattr(args, "terminal_only", False),
-            desktop_only=getattr(args, "desktop_only", False)
+            desktop_only=getattr(args, "desktop_only", False),
+            lock_screen_only=getattr(args, "lock_only", False)
         )
     if not getattr(args, "silent", False):
         print("\n✨ 1-Click Switch Complete! Open a new CMD or PowerShell window to see your new look!\n")
@@ -126,7 +142,34 @@ def cmd_preview(args, pm: ProfileManager):
 
 
 def cmd_apply(args, pm: ProfileManager):
-    apply_active_style(pm, silent=False)
+    apply_active_style(
+        pm,
+        silent=False,
+        terminal_only=getattr(args, "terminal_only", False),
+        desktop_only=getattr(args, "desktop_only", False),
+        lock_screen_only=getattr(args, "lock_only", False)
+    )
+
+
+def cmd_lockscreen(args, pm: ProfileManager):
+    action = args.action
+    if action == "enable":
+        pm.set_lock_screen_enabled(True)
+        print("  ✅ Lock Screen auto-sync enabled.")
+        apply_active_style(pm, silent=False, lock_screen_only=True)
+    elif action == "disable":
+        pm.set_lock_screen_enabled(False)
+        print("  ⚠️ Lock Screen auto-sync disabled.")
+    elif action == "status":
+        enabled = pm.is_lock_screen_enabled()
+        current_img = get_lock_screen_wallpaper() or "(Windows Spotlight / not set)"
+        print(f"\n  🔒 Lock Screen Auto-Sync: {'ENABLED' if enabled else 'DISABLED'}")
+        print(f"  🖼️ Current Lock Screen Image: {current_img}\n")
+    else:
+        from core.wallpaper_animator import get_active_wallpaper_path
+        target = get_active_wallpaper_path() or (STUDIO_ROOT / pm.get_active_style()["wallpaper"])
+        apply_lock_screen_wallpaper(str(target))
+        print(f"  ✅ Windows Lock Screen updated to: {target.name}")
 
 
 def cmd_banner(args, pm: ProfileManager):
@@ -180,7 +223,7 @@ def cmd_screensaver(args, pm: ProfileManager):
         open_screensaver_settings()
         print("  🖥️ Opened Windows Screen Saver settings.")
     elif args.action == "test":
-        test_screensaver()
+        launch_screensaver_player()
 
 
 def cmd_export(args, pm: ProfileManager):
@@ -251,13 +294,21 @@ def main():
     p_switch.add_argument("--silent", action="store_true", help="Quiet mode")
     p_switch.add_argument("--terminal-only", action="store_true", help="Only apply to Windows Terminal")
     p_switch.add_argument("--desktop-only", action="store_true", help="Only apply to Desktop Wallpaper")
+    p_switch.add_argument("--lock-only", action="store_true", help="Only apply to Windows Lock Screen")
     p_switch.add_argument("--no-apply", action="store_true", help="Change config without applying system changes")
 
     # preview
     subparsers.add_parser("preview", help="Preview active style ANSI banner in console")
 
     # apply
-    subparsers.add_parser("apply", help="Apply current active style to targets")
+    p_apply = subparsers.add_parser("apply", help="Apply current active style to targets")
+    p_apply.add_argument("--terminal-only", action="store_true", help="Only apply to Windows Terminal")
+    p_apply.add_argument("--desktop-only", action="store_true", help="Only apply to Desktop Wallpaper")
+    p_apply.add_argument("--lock-only", action="store_true", help="Only apply to Windows Lock Screen")
+
+    # lockscreen
+    p_lock = subparsers.add_parser("lockscreen", help="Manage Windows Lock Screen background sync")
+    p_lock.add_argument("action", choices=["apply", "enable", "disable", "status"], default="apply", nargs="?")
 
     # banner
     p_banner = subparsers.add_parser("banner", help="Manage terminal startup welcome banner")
@@ -316,6 +367,8 @@ def main():
         cmd_preview(args, pm)
     elif args.command == "apply":
         cmd_apply(args, pm)
+    elif args.command == "lockscreen":
+        cmd_lockscreen(args, pm)
     elif args.command == "banner":
         cmd_banner(args, pm)
     elif args.command == "copy-whatsapp":

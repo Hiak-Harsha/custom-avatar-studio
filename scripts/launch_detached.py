@@ -1,26 +1,39 @@
 """
 Detached Launcher for HIAK Wallpaper Interaction Engine
-Spawns pythonw.exe with DETACHED_PROCESS so it runs completely independently of any terminal/subshell session and survives command exits.
+Spawns pythonw.exe outside any terminal/subshell session and ensures it survives command exits.
 """
 import subprocess
-import sys
 import time
 from pathlib import Path
-import os
 
 STUDIO_ROOT = Path(__file__).parent.parent.resolve()
 DETACHED_PROCESS = 0x00000008
 CREATE_NEW_PROCESS_GROUP = 0x00000200
+CREATE_BREAKAWAY_FROM_JOB = 0x01000000
 
-# Terminate existing instances
-os.system('taskkill /F /IM pythonw.exe 2>nul')
+# Terminate only existing wallpaper_animator.py instances (leave other pythonw processes untouched)
+subprocess.run(
+    [
+        "powershell", "-NoProfile", "-Command",
+        "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*wallpaper_animator.py*' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"
+    ],
+    capture_output=True
+)
 time.sleep(0.5)
 
-# Spawn fully detached background process
-p = subprocess.Popen(
-    ["C:\\Python314\\pythonw.exe", str(STUDIO_ROOT / "core" / "wallpaper_animator.py"), "listen"],
-    cwd=str(STUDIO_ROOT),
-    creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
-    close_fds=True
-)
+cmd = ["C:\\Python314\\pythonw.exe", str(STUDIO_ROOT / "core" / "wallpaper_animator.py"), "listen"]
+try:
+    p = subprocess.Popen(
+        cmd,
+        cwd=str(STUDIO_ROOT),
+        creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP | CREATE_BREAKAWAY_FROM_JOB,
+        close_fds=True
+    )
+except PermissionError:
+    p = subprocess.Popen(
+        cmd,
+        cwd=str(STUDIO_ROOT),
+        creationflags=DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP,
+        close_fds=True
+    )
 print(f"Launched detached wallpaper animator! PID: {p.pid}")

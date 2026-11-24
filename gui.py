@@ -14,7 +14,7 @@ STUDIO_ROOT = Path(__file__).parent.resolve()
 sys.path.insert(0, str(STUDIO_ROOT))
 
 from core.profile import ProfileManager
-from core.wallpaper import apply_desktop_wallpaper
+from core.wallpaper import apply_desktop_wallpaper, apply_lock_screen_wallpaper
 from core.terminal import apply_terminal_background
 from core.banner import install_powershell_banner, remove_powershell_banner
 from core.screensaver import open_screensaver_settings
@@ -213,6 +213,7 @@ class AvatarStudioGUI:
         # Checkboxes for target integrations
         self.chk_terminal = tk.BooleanVar(value=True)
         self.chk_desktop = tk.BooleanVar(value=True)
+        self.chk_lock_screen = tk.BooleanVar(value=self.pm.is_lock_screen_enabled())
         self.chk_banner = tk.BooleanVar(value=True)
 
         cb_frame = tk.Frame(opts_frame, bg="#181b26")
@@ -234,6 +235,18 @@ class AvatarStudioGUI:
             cb_frame,
             text="Desktop Wallpaper",
             variable=self.chk_desktop,
+            font=("Segoe UI", 9),
+            fg="#e2e8f0",
+            bg="#181b26",
+            selectcolor="#11131a",
+            activebackground="#181b26",
+            activeforeground="#00e5ff"
+        ).pack(anchor="w")
+
+        tk.Checkbutton(
+            cb_frame,
+            text="Lock Screen Wallpaper (Syncs Windows Lock Screen)",
+            variable=self.chk_lock_screen,
             font=("Segoe UI", 9),
             fg="#e2e8f0",
             bg="#181b26",
@@ -388,6 +401,14 @@ class AvatarStudioGUI:
             try:
                 apply_desktop_wallpaper(str(wall_path))
                 applied.append("Desktop")
+            except Exception:
+                pass
+
+        self.pm.set_lock_screen_enabled(self.chk_lock_screen.get())
+        if self.chk_lock_screen.get():
+            try:
+                apply_lock_screen_wallpaper(str(wall_path))
+                applied.append("Lock Screen")
             except Exception:
                 pass
 

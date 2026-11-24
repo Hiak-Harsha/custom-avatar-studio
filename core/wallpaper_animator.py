@@ -13,12 +13,14 @@ import json
 import os
 from pathlib import Path
 import sys
+import threading
 import time
 
 STUDIO_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(STUDIO_ROOT))
 
-from core.wallpaper import apply_desktop_wallpaper
+from core.profile import ProfileManager
+from core.wallpaper import apply_desktop_wallpaper, apply_lock_screen_wallpaper
 
 POSES_DIR = STUDIO_ROOT / "assets" / "wallpapers" / "poses"
 MORPH_DIR = STUDIO_ROOT / "assets" / "wallpapers" / "poses_hiak_harsha_morph"
@@ -61,6 +63,12 @@ user32.GetAncestor.restype = wintypes.HWND
 user32.GetClassNameW.argtypes = [wintypes.HWND, wintypes.LPWSTR, ctypes.c_int]
 user32.GetClassNameW.restype = ctypes.c_int
 user32.GetForegroundWindow.restype = wintypes.HWND
+user32.OpenDesktopW.argtypes = [wintypes.LPCWSTR, wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+user32.OpenDesktopW.restype = wintypes.HANDLE
+user32.SetThreadDesktop.argtypes = [wintypes.HANDLE]
+user32.SetThreadDesktop.restype = wintypes.BOOL
+user32.CloseDesktop.argtypes = [wintypes.HANDLE]
+user32.CloseDesktop.restype = wintypes.BOOL
 
 
 def log_msg(msg: str):
@@ -81,18 +89,111 @@ def ensure_interactive_desktop() -> bool:
     Ensures the current thread is attached to the Windows interactive user desktop ('default').
     """
     GENERIC_ALL = 0x10000000
+    hDesk = None
     try:
         hDesk = user32.OpenDesktopW("default", 0, False, GENERIC_ALL)
         if hDesk:
-            user32.SetThreadDesktop(hDesk)
-            return True
+            ok = bool(user32.SetThreadDesktop(hDesk))
+            return ok
     except Exception as e:
         log_msg(f"Failed to attach thread desktop: {e}")
+    finally:
+        if hDesk:
+            try:
+                user32.CloseDesktop(hDesk)
+            except Exception:
+                pass
     return False
 
 
+_MUTEX_HANDLE = None
+
+
+def acquire_single_instance_mutex() -> bool:
+    """Prevents multiple background animator instances from firing duplicate clicks/morphs."""
+    global _MUTEX_HANDLE
+    ERROR_ALREADY_EXISTS = 183
+    handle = kernel32.CreateMutexW(None, False, "Local\\HIAK_Wallpaper_Animator_Mutex")
+    if not handle:
+        return True
+    if kernel32.GetLastError() == ERROR_ALREADY_EXISTS:
+        kernel32.CloseHandle(handle)
+        return False
+    _MUTEX_HANDLE = handle
+    return True
+
+
+class LockScreenSyncWorker:
+    """Debounced background worker that keeps the Windows Lock Screen synced to the latest pose."""
+
+    def __init__(self, debounce_seconds: float = 0.45):
+        self.debounce_seconds = debounce_seconds
+        self._lock = threading.Lock()
+        self._event = threading.Event()
+        self._pending_path: str | None = None
+        self._pending_ts: float = 0.0
+        self._thread = threading.Thread(target=self._run, daemon=True)
+        self._thread.start()
+
+    def schedule(self, image_path: str):
+        with self._lock:
+            self._pending_path = image_path
+            self._pending_ts = time.time()
+        self._event.set()
+
+    def _run(self):
+        while True:
+            self._event.wait()
+            while True:
+                with self._lock:
+                    path = self._pending_path
+                    age = time.time() - self._pending_ts
+                if path is None:
+                    self._event.clear()
+                    break
+                remaining = self.debounce_seconds - age
+                if remaining > 0:
+                    time.sleep(remaining)
+                    continue
+                with self._lock:
+                    if self._pending_path != path:
+                        continue
+                    self._pending_path = None
+                    self._event.clear()
+                try:
+                    pm = ProfileManager(str(STUDIO_ROOT))
+                    if pm.is_lock_screen_enabled():
+                        apply_lock_screen_wallpaper(path)
+                        log_msg(f"🔒 Lock screen synced to: {Path(path).name}")
+                except Exception as e:
+                    log_msg(f"Lock screen sync error: {e}")
+                break
+
+
+def get_active_wallpaper_path() -> Path | None:
+    """Returns the current active wallpaper file (active pose if available, else style wallpaper)."""
+    try:
+        pm = ProfileManager(str(STUDIO_ROOT))
+        active = pm.get_active_style()
+        poses_rel = active.get("poses_dir")
+        if poses_rel:
+            p_dir = STUDIO_ROOT / poses_rel
+            idx = get_current_pose_index()
+            pose_path = p_dir / POSE_FILES[idx]
+            if pose_path.exists():
+                return pose_path
+        wall_rel = active.get("wallpaper")
+        if wall_rel:
+            wall_path = STUDIO_ROOT / wall_rel
+            if wall_path.exists():
+                return wall_path
+    except Exception:
+        pass
+    fallback = POSES_DIR / POSE_FILES[get_current_pose_index()]
+    return fallback if fallback.exists() else None
+
+
 def get_poses_dir() -> Path:
-    from core.profile import ProfileManager
     try:
         pm = ProfileManager(str(STUDIO_ROOT))
         active = pm.get_active_style()
@@ -123,8 +224,8 @@ def save_current_pose_index(idx: int):
         json.dump({"current_index": idx, "pose": POSE_FILES[idx]}, f)
 
 
-def advance_wallpaper_pose() -> str:
-    """Advances the desktop wallpaper to the next frame/pose in sequence."""
+def advance_wallpaper_pose(sync_lock_screen: bool = True) -> str:
+    """Advances the desktop wallpaper (and optionally lock screen) to the next frame/pose in sequence."""
     poses_dir = get_poses_dir()
     idx = get_current_pose_index()
     next_idx = (idx + 1) % len(POSE_FILES)
@@ -133,6 +234,12 @@ def advance_wallpaper_pose() -> str:
     target_file = poses_dir / POSE_FILES[next_idx]
     if target_file.exists():
         apply_desktop_wallpaper(str(target_file))
+        if sync_lock_screen:
+            try:
+                if ProfileManager(str(STUDIO_ROOT)).is_lock_screen_enabled():
+                    apply_lock_screen_wallpaper(str(target_file))
+            except Exception as e:
+                log_msg(f"Lock screen pose sync error: {e}")
 
     return POSE_FILES[next_idx]
 
@@ -208,7 +315,15 @@ def listen_for_desktop_clicks():
     2. ALWAYS-ON CLICKS: Clicks on desktop wallpaper advance mascot emotions instantly.
     3. DPI-AWARE & SELF-HEALING: Recovers automatically from lock screens or display changes.
     """
+    if not acquire_single_instance_mutex():
+        log_msg("Another wallpaper animator instance is already running; exiting duplicate.")
+        return
+
     log_msg("Starting HIAK Mascot Studio Wallpaper Engine (DPI-Aware)...")
+    lock_sync_worker = LockScreenSyncWorker()
+    initial_wp = get_active_wallpaper_path()
+    if initial_wp:
+        lock_sync_worker.schedule(str(initial_wp))
     
     while True:
         try:
@@ -232,6 +347,9 @@ def listen_for_desktop_clicks():
             was_hovering = False
             was_down = False
             last_click_time = 0.0
+            was_locked = False
+            last_reattach_attempt = 0.0
+            last_progman = user32.FindWindowW("Progman", None)
 
             log_msg(f"Engine active! Resolution: {screen_w}x{screen_h}. Monitoring clicks & hover...")
 
@@ -239,9 +357,46 @@ def listen_for_desktop_clicks():
                 now = time.time()
                 
                 if not user32.GetCursorPos(ctypes.byref(pt)):
-                    ensure_interactive_desktop()
-                    time.sleep(0.08)
+                    if not was_locked:
+                        was_locked = True
+                        log_msg("Session locked / desktop unavailable; waiting for unlock...")
+                    if now - last_reattach_attempt >= 1.0:
+                        last_reattach_attempt = now
+                        ensure_interactive_desktop()
+                    time.sleep(0.25)
                     continue
+
+                if was_locked:
+                    was_locked = False
+                    ensure_interactive_desktop()
+                    screen_w = user32.GetSystemMetrics(0)
+                    screen_h = user32.GetSystemMetrics(1)
+                    last_progman = user32.FindWindowW("Progman", None)
+                    current_state = STATE_IDLE
+                    was_hovering = False
+                    was_down = False
+                    last_hover_exit_time = now
+                    try:
+                        active_wp = get_active_wallpaper_path()
+                        if active_wp and active_wp.exists():
+                            apply_desktop_wallpaper(str(active_wp), is_transient=False)
+                    except Exception as e:
+                        log_msg(f"Unlock wallpaper restore error: {e}")
+                    log_msg(f"Session unlocked! Resumed desktop interaction ({screen_w}x{screen_h}).")
+
+                # Detect Explorer restarts / display shell changes and restore active wallpaper
+                cur_progman = user32.FindWindowW("Progman", None)
+                if cur_progman and cur_progman != last_progman:
+                    last_progman = cur_progman
+                    screen_w = user32.GetSystemMetrics(0)
+                    screen_h = user32.GetSystemMetrics(1)
+                    try:
+                        active_wp = get_active_wallpaper_path()
+                        if active_wp and active_wp.exists():
+                            apply_desktop_wallpaper(str(active_wp), is_transient=False)
+                        log_msg("Explorer desktop shell refreshed; re-applied active wallpaper.")
+                    except Exception as e:
+                        log_msg(f"Explorer refresh restore error: {e}")
 
                 on_desktop = is_desktop_surface(pt.x, pt.y)
 
@@ -253,8 +408,11 @@ def listen_for_desktop_clicks():
                     if on_desktop and (now - last_click_time > 0.22):
                         last_click_time = now
                         try:
-                            pose = advance_wallpaper_pose()
+                            pose = advance_wallpaper_pose(sync_lock_screen=False)
                             log_msg(f"⚡ Desktop clicked! Advanced mascot to: {pose}")
+                            pose_file = get_poses_dir() / pose
+                            if pose_file.exists():
+                                lock_sync_worker.schedule(str(pose_file))
                             if current_state != STATE_IDLE:
                                 current_state = STATE_IDLE
                                 last_hover_exit_time = now

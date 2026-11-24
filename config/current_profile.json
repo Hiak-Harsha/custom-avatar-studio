@@ -10,6 +10,9 @@
     "desktop": {
         "enabled": true
     },
+    "lock_screen": {
+        "enabled": true
+    },
     "banner": {
         "show_on_powershell_startup": true,
         "banner_width": 54

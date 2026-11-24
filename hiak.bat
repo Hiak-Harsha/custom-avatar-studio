@@ -19,17 +19,16 @@ python "%STUDIO_DIR%\cli.py" %*
 goto end
 
 :do_start
-powershell -NoProfile -Command "$p = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*wallpaper_animator.py listen*' }; if ($p) { Write-Host 'Wallpaper engine is already active (PID: ' $p.ProcessId ')' -ForegroundColor Green } else { Start-Process 'wscript.exe' -ArgumentList '\"%STUDIO_DIR%\scripts\run_background.vbs\"'; Start-Sleep -Milliseconds 800; Write-Host 'Wallpaper engine started successfully in background!' -ForegroundColor Green }"
+powershell -NoProfile -Command "$t = Get-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' -ErrorAction SilentlyContinue; if ($t) { Enable-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' | Out-Null }; $p = Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*wallpaper_animator.py*listen*' }; if ($p) { Write-Host 'Wallpaper engine is already active (PID: ' $p.ProcessId ')' -ForegroundColor Green } elseif ($t) { Start-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator'; Start-Sleep -Milliseconds 900; Write-Host 'Wallpaper engine started via persistent Task Scheduler!' -ForegroundColor Green } else { Start-Process 'wscript.exe' -ArgumentList '\"%STUDIO_DIR%\scripts\run_background.vbs\"'; Start-Sleep -Milliseconds 800; Write-Host 'Wallpaper engine started successfully in background!' -ForegroundColor Green }"
 goto end
 
 :do_stop
-powershell -NoProfile -Command "$procs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*wallpaper_animator.py listen*' }; if ($procs) { foreach ($p in $procs) { Stop-Process -Id $p.ProcessId -Force }; Write-Host 'Stopped background wallpaper animator.' -ForegroundColor Yellow } else { Write-Host 'No background wallpaper animator was running.' -ForegroundColor Gray }"
+powershell -NoProfile -Command "if (Get-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' -ErrorAction SilentlyContinue) { Stop-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' -ErrorAction SilentlyContinue; Disable-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' -ErrorAction SilentlyContinue | Out-Null }; $procs = Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*wallpaper_animator.py*listen*' }; if ($procs) { foreach ($p in $procs) { Stop-Process -Id $p.ProcessId -Force }; Write-Host 'Stopped background wallpaper animator.' -ForegroundColor Yellow } else { Write-Host 'No background wallpaper animator was running.' -ForegroundColor Gray }"
 goto end
 
 :do_restart
 echo Restarting HIAK Mascot Studio background engine...
-powershell -NoProfile -Command "$procs = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*wallpaper_animator.py listen*' }; if ($procs) { foreach ($p in $procs) { Stop-Process -Id $p.ProcessId -Force } }"
-powershell -NoProfile -Command "Start-Process 'wscript.exe' -ArgumentList '\"%STUDIO_DIR%\scripts\run_background.vbs\"'; Start-Sleep -Milliseconds 900"
+powershell -NoProfile -Command "$procs = Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*wallpaper_animator.py*listen*' }; if ($procs) { foreach ($p in $procs) { Stop-Process -Id $p.ProcessId -Force } }; $t = Get-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' -ErrorAction SilentlyContinue; if ($t) { Enable-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' | Out-Null; Start-ScheduledTask -TaskName 'HIAK_Wallpaper_Animator' } else { Start-Process 'wscript.exe' -ArgumentList '\"%STUDIO_DIR%\scripts\run_background.vbs\"' }; Start-Sleep -Milliseconds 900"
 echo Done! Check status with: hiak status
 goto end
 
@@ -80,7 +79,7 @@ echo Directory: %CD%
 echo Studio:    %STUDIO_DIR%
 echo.
 echo [Background Desktop Interaction Engine]
-powershell -NoProfile -Command "$p = Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*wallpaper_animator.py listen*' }; if ($p) { Write-Host '  Status: ACTIVE (PID: ' $p.ProcessId ')' -ForegroundColor Green; Write-Host '  Mode:   Instant hover (HIAK -> HARSHA Cyber-Bot) + Always-on clicks' -ForegroundColor Cyan } else { Write-Host '  Status: INACTIVE (Run hiak start to launch)' -ForegroundColor Red }"
+powershell -NoProfile -Command "$p = Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'python*' -and $_.CommandLine -like '*wallpaper_animator.py*listen*' }; if ($p) { Write-Host '  Status: ACTIVE (PID: ' $p.ProcessId ')' -ForegroundColor Green; Write-Host '  Mode:   Instant hover (HIAK -> HARSHA Cyber-Bot) + Always-on clicks' -ForegroundColor Cyan } else { Write-Host '  Status: INACTIVE (Run hiak start to launch)' -ForegroundColor Red }"
 echo.
 if exist "%STUDIO_DIR%\logs\animator.log" (
     echo [Recent Engine Activity]
